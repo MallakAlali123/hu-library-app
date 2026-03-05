@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "964215488715",
+    "project_id": "hashemite-university-library",
+    "storage_bucket": "hashemite-university-library.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964215488715:android:f81a3d5478e964b0581b4e",
+        "android_client_info": {
+          "package_name": "com.example.hashemiteuniversitylibrary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDndLyZc60-pAg6VFob8iH65JoeDg7Ks6Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964215488715:android:9836e0c9cc2a9fa3581b4e",
+        "android_client_info": {
+          "package_name": "com.example.hu_library_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDndLyZc60-pAg6VFob8iH65JoeDg7Ks6Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
