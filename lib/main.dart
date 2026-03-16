@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'features/auth/splash_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+void main() {
   runApp(const MyApp());
 }
 
@@ -19,17 +14,12 @@ class MyApp extends StatelessWidget {
       title: 'HU Library',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFCC3333),
+        ),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            '🏛️ مرحباً بك في مكتبة الجامعة الهاشمية',
-            style: TextStyle(fontSize: 20),
-          ),
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }
