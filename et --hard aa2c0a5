@@ -1,0 +1,27 @@
+[33m4936616[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/majed[m[33m, [m[1;31morigin/feature/majed[m[33m)[m Fix: move auth screens to lib/features/auth/
+[33mea28b79[m Fix: move auth screens to lib/features/auth/
+[33m321e779[m Add splash, login, signup, verify email screens
+[33m519da97[m Merge main into feature/majed
+[33m48f0b85[m Add login screen and university logo
+[33maa2c0a5[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mtemp-main[m[33m)[m Merge pull request #5 from MallakAlali123/feature/backend-core-mallak
+[33m42a4ce6[m Add missing models and repositories
+[33m6be011c[m Merge pull request #4 from MallakAlali123/feature/database-models
+[33mdfbf549[m Merge pull request #3 from MallakAlali123/feature/backend-core-mallak
+[33madbfe4c[m Merge branch 'feature/database-models' of https://github.com/MallakAlali123/hu-library-app into feature/backend-core-mallak
+[33m07d2a34[m Add all repositories
+[33me09563c[m rename announcment to announcement file
+[33m924ed97[m Add all services and router
+[33mcb01a83[m Remove duplicate models folder
+[33m6c0cff1[m Merge branch 'feature/database-models' of https://github.com/MallakAlali123/hu-library-app into feature/backend-core-mallak
+[33ma86e905[m Fix models path to lib/data/models
+[33meaec802[m Merge branch 'main' of https://github.com/MallakAlali123/hu-library-app into feature/backend-core-mallak
+[33m5ef5f08[m update model
+[33mb444340[m add new model
+[33mac8edae[m add models
+[33m8795583[m Add auth service
+[33me445f87[m Merge pull request #2 from MallakAlali123/feature/backend-core-mallak
+[33m8ac473e[m Remove duplicate google-services file
+[33m9a61555[m Add Firebase configuration
+[33m90663ac[m Merge pull request #1 from MallakAlali123/feature/backend-core-mallak
+[33m5acbd87[m Add project structure and dependencies
+[33m5540c93[m Initial Flutter project setup
