@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'features/auth/splash_screen.dart';
+import 'features/auth/login_screen.dart';
+import 'features/auth/signup_screen.dart';
+import 'features/auth/VE_Signup.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
-  redirect: (context, state) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return '/login';
-    return null;
-  },
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      builder: (context, state) => const SplashScreen(),
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('شاشة تسجيل الدخول - قريباً')),
-      ),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('شاشة التسجيل - قريباً')),
-      ),
+      builder: (context, state) => const SignUpScreen(),
+    ),
+    GoRoute(
+      path: '/verify-email',
+      builder: (context, state) {
+        final email = state.extra as String? ?? '';
+        return VerifyEmailScreen(email: email);
+      },
     ),
     GoRoute(
       path: '/student',

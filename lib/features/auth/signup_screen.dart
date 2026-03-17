@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'VE_Signup.dart';
+import 'package:go_router/go_router.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -31,15 +31,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() => _isLoading = true);
       await Future.delayed(const Duration(seconds: 1));
       setState(() => _isLoading = false);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VerifyEmailScreen(
-            email: _emailController.text.trim(),
-          ),
-        ),
-      );
+      context.go('/verify-email', extra: _emailController.text.trim());
     }
   }
 
@@ -53,7 +45,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // ── Header ───────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Row(
@@ -61,7 +52,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: () => context.go('/login'),
                         child: Container(
                           width: 36,
                           height: 36,
@@ -93,7 +84,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
 
-              // ── Hero Image ────────────────────────────────────
               Image.asset(
                 'assets/images/library.jpg',
                 width: double.infinity,
@@ -140,7 +130,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
 
-                          // Full Name
                           const Text('Full Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -163,7 +152,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Student ID
                           const Text('Student ID', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -186,7 +174,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                           const SizedBox(height: 16),
 
-                          // University Email
                           const Text('University Email', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -211,7 +198,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Password
                           const Text('Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -243,7 +229,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                           const SizedBox(height: 28),
 
-                          // Sign Up Button
                           SizedBox(
                             width: double.infinity,
                             height: 54,
@@ -274,7 +259,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     child: MouseRegion(
                                       cursor: SystemMouseCursors.click,
                                       child: GestureDetector(
-                                        onTap: () => Navigator.pop(context),
+                                        onTap: () => context.go('/login'),
                                         child: const Text('Login', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFCC3333))),
                                       ),
                                     ),

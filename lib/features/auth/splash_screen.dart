@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,10 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    context.go('/login');
   }
 
   @override
@@ -54,8 +51,6 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             children: [
               const Spacer(flex: 3),
-
-              // ── Logo ─────────────────────────────────────────
               Container(
                 width: 90,
                 height: 90,
@@ -76,10 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   size: 48,
                 ),
               ),
-
               const SizedBox(height: 28),
-
-              // ── App Name ─────────────────────────────────────
               const Text(
                 'Academic Library',
                 style: TextStyle(
@@ -89,10 +81,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   letterSpacing: 0.5,
                 ),
               ),
-
               const SizedBox(height: 8),
-
-              // ── Tagline ──────────────────────────────────────
               const Text(
                 'KNOWLEDGE AT YOUR FINGERTIPS',
                 style: TextStyle(
@@ -102,10 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-
               const Spacer(flex: 3),
-
-              // ── Progress Bar ──────────────────────────────────
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -145,10 +131,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ],
               ),
-
               const Spacer(flex: 2),
-
-              // ── Version ───────────────────────────────────────
               const Padding(
                 padding: EdgeInsets.only(bottom: 16),
                 child: Text(
