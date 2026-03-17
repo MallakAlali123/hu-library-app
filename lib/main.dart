@@ -20,7 +20,9 @@ class MyApp extends StatelessWidget {
       title: 'HU Library',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFCC3333),
+        ),
         useMaterial3: true,
       ),
       routerConfig: appRouter,
