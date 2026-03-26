@@ -42,3 +42,7 @@ flutter:
  
   assets:
     - assets/images/logo.png
+    - assets/images/book_suggestion.png
+    - assets/images/donate_book.png
+    - assets/images/hall.png
+    - assets/images/reserved.png
