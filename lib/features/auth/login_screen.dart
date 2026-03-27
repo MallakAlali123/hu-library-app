@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
-import 'home_page.dart'; // تأكد أن هذا هو اسم ملف صفحة الخدمات التي صممناها
+import 'home_page.dart';
+import 'forgot_password_email.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,21 +24,18 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ── التعديل هنا لعملية الانتقال ──────────────────────────────────
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // محاكاة لعملية تسجيل الدخول (API Call)
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
         setState(() => _isLoading = false);
 
-        // الانتقال لصفحة الهوم وحذف صفحة اللوج ان من الذاكرة (Back Stack)
         Navigator.pushReplacement(
           context,
-         MaterialPageRoute(builder: (context) => const LibraryServicesPage()),
+          MaterialPageRoute(builder: (context) => LibraryServicesPage()),
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,11 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: const Color(0xFFCC3333),
                         child: Center(
                           child: Image.asset(
-                            'assets/images/logo.png', // تأكد من وجود الصورة في مجلد assets
+                            'assets/images/logo.png',
                             height: 140,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => 
-                              const Icon(Icons.account_balance, size: 80, color: Colors.white),
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.account_balance, size: 80, color: Colors.white),
                           ),
                         ),
                       ),
@@ -201,7 +199,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // TODO: Navigate to ForgotPassword screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ForgotPasswordEmail()),
+                        );
                       },
                       child: const Text(
                         'Forgot Password?',
