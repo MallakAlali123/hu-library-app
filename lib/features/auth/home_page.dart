@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart';
+import 'donate.dart';
+import 'hall.dart';
 
 class LibraryServicesPage extends StatefulWidget {
   const LibraryServicesPage({super.key});
@@ -85,13 +87,10 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 controller: _searchController,
                 decoration: const InputDecoration(
                   hintText: 'Search title, author, or ISBN...',
-                  hintStyle:
-                      TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
-                  prefixIcon:
-                      Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
+                  hintStyle: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+                  prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
                   border: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
@@ -139,7 +138,22 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
               ),
               itemBuilder: (context, index) {
                 final service = _services[index];
-                return _ServiceCard(service: service);
+                return _ServiceCard(
+                  service: service,
+                  onTap: () {
+  if (service.title == 'Donate a book') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const DonateScreen()),
+    );
+  } else if (service.title == 'Hall Reservation') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HallScreen()),
+    );
+  }
+},    
+                );
               },
             ),
 
@@ -214,29 +228,14 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFFCC3333),
         unselectedItemColor: const Color(0xFFAAAAAA),
-        selectedLabelStyle: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-        ),
+        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         elevation: 8,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_rounded),
-            label: 'SEARCH',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined),
-            label: 'REQUESTS',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book_rounded),
-            label: 'MY BOOKS',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline_rounded),
-            label: 'PROFILE',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'SEARCH'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
         ],
       ),
     );
@@ -247,19 +246,19 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
 
 class _ServiceCard extends StatelessWidget {
   final _ServiceItem service;
+  final VoidCallback onTap;
 
-  const _ServiceCard({required this.service});
+  const _ServiceCard({required this.service, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background image with fallback color
             Image.asset(
               service.imageAsset,
               fit: BoxFit.cover,
@@ -267,22 +266,15 @@ class _ServiceCard extends StatelessWidget {
                 color: const Color(0xFF8B2222),
               ),
             ),
-
-            // Dark gradient overlay
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black54,
-                  ],
+                  colors: [Colors.transparent, Colors.black54],
                 ),
               ),
             ),
-
-            // Icon + Title
             Positioned(
               bottom: 12,
               left: 12,
