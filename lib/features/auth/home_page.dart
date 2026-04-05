@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'profile_screen.dart';
 import 'donate.dart';
 import 'hall.dart';
+import 'search_results.dart';
 
 class LibraryServicesPage extends StatefulWidget {
   const LibraryServicesPage({super.key});
@@ -18,6 +19,18 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _handleSearch() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchResultsScreen(query: query),
+      ),
+    );
   }
 
   final List<_ServiceItem> _services = const [
@@ -65,8 +78,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded,
-                color: Color(0xFF1A1A1A)),
+            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF1A1A1A)),
             onPressed: () {},
           ),
         ],
@@ -76,6 +88,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             // ── Search Bar ───────────────────────────────────
             Container(
               decoration: BoxDecoration(
@@ -85,12 +98,22 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
               ),
               child: TextField(
                 controller: _searchController,
-                decoration: const InputDecoration(
+                textInputAction: TextInputAction.search,
+                onSubmitted: (_) => _handleSearch(),
+                decoration: InputDecoration(
                   hintText: 'Search title, author, or ISBN...',
-                  hintStyle: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
-                  prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
+                  hintStyle: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
+                  // ✅ زر البحث على اليمين
+                  suffixIcon: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: _handleSearch,
+                      child: const Icon(Icons.arrow_forward_rounded, color: Color(0xFFCC3333)),
+                    ),
+                  ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
@@ -141,18 +164,12 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 return _ServiceCard(
                   service: service,
                   onTap: () {
-  if (service.title == 'Donate a book') {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const DonateScreen()),
-    );
-  } else if (service.title == 'Hall Reservation') {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const HallScreen()),
-    );
-  }
-},    
+                    if (service.title == 'Donate a book') {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const DonateScreen()));
+                    } else if (service.title == 'Hall Reservation') {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const HallScreen()));
+                    }
+                  },
                 );
               },
             ),
@@ -175,32 +192,15 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                       color: const Color(0xFFCC3333),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.help_outline_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
+                    child: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 24),
                   ),
                   const SizedBox(width: 14),
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Need help?',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                      ),
+                      Text('Need help?', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                       SizedBox(height: 3),
-                      Text(
-                        'Chat with our librarian available 24/7',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF888888),
-                        ),
-                      ),
+                      Text('Chat with our librarian available 24/7', style: TextStyle(fontSize: 12, color: Color(0xFF888888))),
                     ],
                   ),
                 ],
@@ -218,10 +218,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         onTap: (index) {
           setState(() => _currentIndex = index);
           if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
           }
         },
         type: BottomNavigationBarType.fixed,
@@ -242,8 +239,6 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
   }
 }
 
-// ── Service Card Widget ───────────────────────────────────────────────────────
-
 class _ServiceCard extends StatelessWidget {
   final _ServiceItem service;
   final VoidCallback onTap;
@@ -262,9 +257,7 @@ class _ServiceCard extends StatelessWidget {
             Image.asset(
               service.imageAsset,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFF8B2222),
-              ),
+              errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF8B2222)),
             ),
             Container(
               decoration: const BoxDecoration(
@@ -284,14 +277,7 @@ class _ServiceCard extends StatelessWidget {
                   Icon(service.icon, color: Colors.white, size: 18),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text(
-                      service.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Text(service.title, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -303,16 +289,10 @@ class _ServiceCard extends StatelessWidget {
   }
 }
 
-// ── Data Model ────────────────────────────────────────────────────────────────
-
 class _ServiceItem {
   final String title;
   final IconData icon;
   final String imageAsset;
 
-  const _ServiceItem({
-    required this.title,
-    required this.icon,
-    required this.imageAsset,
-  });
+  const _ServiceItem({required this.title, required this.icon, required this.imageAsset});
 }

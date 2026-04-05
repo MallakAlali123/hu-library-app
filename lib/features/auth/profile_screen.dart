@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'home_page.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +41,6 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 24),
 
-            // ── Avatar ────────────────────────────────────────
             Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -73,7 +78,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 14),
 
-            // ── Name & Info ───────────────────────────────────
             const Text(
               'Name',
               style: TextStyle(
@@ -99,7 +103,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ── Stats ─────────────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -116,7 +119,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ── Library & Activity Section ────────────────────
             _SectionHeader(title: 'LIBRARY & ACTIVITY'),
 
             _MenuItem(
@@ -135,7 +137,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // ── Preferences Section ───────────────────────────
             _SectionHeader(title: 'PREFERENCES'),
 
             _MenuItem(
@@ -154,7 +155,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // ── Logout Button ─────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
@@ -185,10 +185,19 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
 
-      // ── Bottom Navigation Bar ─────────────────────────────
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
-        onTap: (_) {},
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LibraryServicesPage(),
+              ),
+              (route) => false,
+            );
+          }
+        },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFFCC3333),
@@ -206,8 +215,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-// ── Reusable Widgets ──────────────────────────────────────────────────────────
 
 class _StatItem extends StatelessWidget {
   final String value;

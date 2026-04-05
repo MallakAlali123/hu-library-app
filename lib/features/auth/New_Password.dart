@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class NewPassword extends StatefulWidget {
-  // ملاحظة: حذفنا const من هنا لأن الصفحة تحتوي على متغيرات ديناميكية (Controllers)
   const NewPassword({super.key});
 
   @override

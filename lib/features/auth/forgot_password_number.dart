@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// تأكد أن هذا الاسم يطابق اسم ملفك الحقيقي
 import 'forgot_password_verify_n.dart'; 
 
 class ForgotPasswordNumber extends StatefulWidget {

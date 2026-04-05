@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// تأكد من وجود ملف new_password.dart في نفس المجلد
 import 'new_password.dart'; 
 
 class ForgotPasswordVerify_n extends StatefulWidget {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// استيراد الملفات الضرورية للانتقال إليها
 import 'forgot_password_verify.dart';
 import 'forgot_password_number.dart';
 

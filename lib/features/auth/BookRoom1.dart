@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class BookRoom1Screen extends StatefulWidget {
-  const BookRoom1Screen({super.key});
+  final String roomName;
+
+  const BookRoom1Screen({super.key, required this.roomName});
 
   @override
   State<BookRoom1Screen> createState() => _BookRoom1ScreenState();
@@ -40,7 +42,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     final firstDay = DateTime(_currentMonth.year, _currentMonth.month, 1);
     final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
     final startWeekday = firstDay.weekday % 7;
-    final List<int?> days = List.filled(startWeekday, null);
+    final List<int?> days = List<int?>.generate(startWeekday, (_) => null);
     for (int i = 1; i <= daysInMonth; i++) {
       days.add(i);
     }
@@ -69,9 +71,9 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
             child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A1A1A)),
           ),
         ),
-        title: const Text(
-          'Reserve Hall',
-          style: TextStyle(
+        title: Text(
+          widget.roomName,
+          style: const TextStyle(
             color: Color(0xFF1A1A1A),
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -91,7 +93,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ── Room Image ────────────────────────────────────
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: Stack(
@@ -117,10 +118,10 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          'A',
-                          style: TextStyle(
+                          widget.roomName[0],
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -135,7 +136,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 24),
 
-            // ── Select Date ───────────────────────────────────
             const Text(
               'Select Date',
               style: TextStyle(
@@ -147,7 +147,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 12),
 
-            // Calendar
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -157,7 +156,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
               ),
               child: Column(
                 children: [
-                  // Month Navigation
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -188,7 +186,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
                   const SizedBox(height: 12),
 
-                  // Week headers
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) {
@@ -209,7 +206,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
                   const SizedBox(height: 8),
 
-                  // Days Grid
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -253,7 +249,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 24),
 
-            // ── Time Slots ────────────────────────────────────
             const Text(
               'Available Time Slots',
               style: TextStyle(
@@ -331,7 +326,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 32),
 
-            // ── Reserve Now Button ────────────────────────────
             SizedBox(
               width: double.infinity,
               height: 54,
@@ -344,7 +338,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                     return;
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Reserved: Day $_selectedDay at $_selectedTime')),
+                    SnackBar(content: Text('Reserved: ${widget.roomName} - Day $_selectedDay at $_selectedTime')),
                   );
                 },
                 style: ElevatedButton.styleFrom(

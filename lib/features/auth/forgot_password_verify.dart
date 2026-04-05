@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// تأكد من استيراد الصفحة التالية بشكل صحيح
 import 'new_password.dart'; 
 
 class ForgotPasswordVerify extends StatefulWidget {

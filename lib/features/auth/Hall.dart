@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'BookRoom1.dart';
 
 class HallScreen extends StatefulWidget {
   const HallScreen({super.key});
@@ -67,7 +68,6 @@ class _HallScreenState extends State<HallScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // ── Tabs ─────────────────────────────────────────
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -93,7 +93,6 @@ class _HallScreenState extends State<HallScreen> {
             ),
           ),
 
-          // ── Filters ───────────────────────────────────────
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -101,26 +100,16 @@ class _HallScreenState extends State<HallScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _FilterChip(
-                    label: _selectedCapacity,
-                    onTap: () {},
-                  ),
+                  _FilterChip(label: _selectedCapacity, onTap: () {}),
                   const SizedBox(width: 8),
-                  _FilterChip(
-                    label: _selectedFloor,
-                    onTap: () {},
-                  ),
+                  _FilterChip(label: _selectedFloor, onTap: () {}),
                   const SizedBox(width: 8),
-                  _FilterChip(
-                    label: _selectedAvailability,
-                    onTap: () {},
-                  ),
+                  _FilterChip(label: _selectedAvailability, onTap: () {}),
                 ],
               ),
             ),
           ),
 
-          // ── Room List ──────────────────────────────────────
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -133,7 +122,6 @@ class _HallScreenState extends State<HallScreen> {
         ],
       ),
 
-      // ── Bottom Navigation Bar ─────────────────────────────
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
         type: BottomNavigationBarType.fixed,
@@ -153,8 +141,6 @@ class _HallScreenState extends State<HallScreen> {
     );
   }
 }
-
-// ── Filter Chip ───────────────────────────────────────────────────────────────
 
 class _FilterChip extends StatelessWidget {
   final String label;
@@ -192,8 +178,6 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-// ── Room Card ─────────────────────────────────────────────────────────────────
-
 class _RoomCard extends StatelessWidget {
   final _RoomItem room;
 
@@ -218,7 +202,6 @@ class _RoomCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // Room Image
           Stack(
             children: [
               ClipRRect(
@@ -261,7 +244,6 @@ class _RoomCard extends StatelessWidget {
             ],
           ),
 
-          // Room Info
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
             child: Column(
@@ -299,23 +281,31 @@ class _RoomCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Book Room Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Book room
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFCC3333),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Book Room',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookRoom1Screen(roomName: room.name),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFCC3333),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Book Room',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ),
@@ -327,8 +317,6 @@ class _RoomCard extends StatelessWidget {
     );
   }
 }
-
-// ── Data Model ────────────────────────────────────────────────────────────────
 
 class _RoomItem {
   final String name;
