@@ -4,16 +4,6 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-/// Default [FirebaseOptions] for use with your Firebase apps.
-///
-/// Example:
-/// ```dart
-/// import 'firebase_options.dart';
-/// // ...
-/// await Firebase.initializeApp(
-///   options: DefaultFirebaseOptions.currentPlatform,
-/// );
-/// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -41,46 +31,44 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDimC8nYuP-5nWDL0iTq_FBJkYu2-uE_dI',
-    appId: '1:964215488715:web:3a821e53a4eb9b46581b4e',
-    messagingSenderId: '964215488715',
-    projectId: 'hashemite-university-library',
-    authDomain: 'hashemite-university-library.firebaseapp.com',
-    storageBucket: 'hashemite-university-library.firebasestorage.app',
+    apiKey: 'AIzaSyAUp479n0kav5FFQaH2ez4D9uBLyH3wU4o',
+    authDomain: 'hu-library-app.firebaseapp.com',
+    projectId: 'hu-library-app',
+    storageBucket: 'hu-library-app.firebasestorage.app',
+    messagingSenderId: '213123490500',
+    appId: '1:213123490500:web:1147020a3a9e6c078d9f91',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDndLyZc60-pAg6VFob8iH65JoeDg7Ks6Y',
-    appId: '1:964215488715:android:9836e0c9cc2a9fa3581b4e',
-    messagingSenderId: '964215488715',
-    projectId: 'hashemite-university-library',
-    storageBucket: 'hashemite-university-library.firebasestorage.app',
+    apiKey: 'AIzaSyCjdkfk66NSdCHuYH0g2IhglYo-VTN31Ng',
+    appId: '1:213123490500:android:20e8d4c5473006188d9f91',
+    messagingSenderId: '213123490500',
+    projectId: 'hu-library-app',
+    storageBucket: 'hu-library-app.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBrZ3sxQ6rAKxbA7ofHtwbjSPeYate_R5w',
-    appId: '1:964215488715:ios:a905b8536cf59c6e581b4e',
-    messagingSenderId: '964215488715',
-    projectId: 'hashemite-university-library',
-    storageBucket: 'hashemite-university-library.firebasestorage.app',
-    iosBundleId: 'com.example.huLibraryApp',
+    apiKey: 'AIzaSyAUp479n0kav5FFQaH2ez4D9uBLyH3wU4o',
+    appId: '1:213123490500:web:1147020a3a9e6c078d9f91',
+    messagingSenderId: '213123490500',
+    projectId: 'hu-library-app',
+    storageBucket: 'hu-library-app.firebasestorage.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBrZ3sxQ6rAKxbA7ofHtwbjSPeYate_R5w',
-    appId: '1:964215488715:ios:a905b8536cf59c6e581b4e',
-    messagingSenderId: '964215488715',
-    projectId: 'hashemite-university-library',
-    storageBucket: 'hashemite-university-library.firebasestorage.app',
-    iosBundleId: 'com.example.huLibraryApp',
+    apiKey: 'AIzaSyAUp479n0kav5FFQaH2ez4D9uBLyH3wU4o',
+    appId: '1:213123490500:web:1147020a3a9e6c078d9f91',
+    messagingSenderId: '213123490500',
+    projectId: 'hu-library-app',
+    storageBucket: 'hu-library-app.firebasestorage.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDimC8nYuP-5nWDL0iTq_FBJkYu2-uE_dI',
-    appId: '1:964215488715:web:12889f2ecc20ac06581b4e',
-    messagingSenderId: '964215488715',
-    projectId: 'hashemite-university-library',
-    authDomain: 'hashemite-university-library.firebaseapp.com',
-    storageBucket: 'hashemite-university-library.firebasestorage.app',
+    apiKey: 'AIzaSyAUp479n0kav5FFQaH2ez4D9uBLyH3wU4o',
+    authDomain: 'hu-library-app.firebaseapp.com',
+    projectId: 'hu-library-app',
+    storageBucket: 'hu-library-app.firebasestorage.app',
+    messagingSenderId: '213123490500',
+    appId: '1:213123490500:web:1147020a3a9e6c078d9f91',
   );
 }

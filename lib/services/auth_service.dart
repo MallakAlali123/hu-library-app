@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
-class AuthService {
+class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -30,6 +31,7 @@ class AuthService {
         'createdAt': DateTime.now().toIso8601String(),
       });
 
+      notifyListeners();
       return {'success': true, 'message': 'تم التسجيل بنجاح'};
     } catch (e) {
       return {'success': false, 'message': e.toString()};
@@ -46,6 +48,7 @@ class AuthService {
         email: email,
         password: password,
       );
+      notifyListeners();
       return {'success': true, 'message': 'تم تسجيل الدخول بنجاح'};
     } catch (e) {
       return {'success': false, 'message': e.toString()};
@@ -55,6 +58,7 @@ class AuthService {
   // تسجيل الخروج
   Future<void> logout() async {
     await _auth.signOut();
+    notifyListeners();
   }
 
   // الحصول على دور المستخدم
