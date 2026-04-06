@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// تأكد من استيراد الصفحة التالية بشكل صحيح
-import 'new_password.dart'; 
+import 'package:go_router/go_router.dart';
 
 class ForgotPasswordVerify extends StatefulWidget {
   const ForgotPasswordVerify({super.key});
@@ -11,19 +10,14 @@ class ForgotPasswordVerify extends StatefulWidget {
 }
 
 class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
-  // استخدام TextEditingController و FocusNode يحتاج إلى تنظيف (dispose) وهو ما قمت به بشكل صحيح
   final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   bool _isLoading = false;
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
+    for (var controller in _controllers) controller.dispose();
+    for (var node in _focusNodes) node.dispose();
     super.dispose();
   }
 
@@ -38,15 +32,9 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
 
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
-
     if (!mounted) return;
-
-    // الانتقال لصفحة تعيين كلمة المرور الجديدة (تأكد من وجود const إذا كان الكلاس يدعم ذلك)
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const NewPassword()),
-    );
+    setState(() => _isLoading = false);
+    context.go('/new-password');
   }
 
   @override
@@ -60,7 +48,7 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: themeRed),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/forgot-password'),
         ),
         title: const Text(
           'Verification',
@@ -78,7 +66,7 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
                   color: Color(0xFFFFEBEE),
-                  shape: BoxShape.circle, 
+                  shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.mark_email_read_outlined, size: 40, color: themeRed),
               ),
@@ -94,22 +82,17 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
                 style: TextStyle(color: Color(0xFF757575), fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 32),
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(6, (index) => _buildOtpBox(index, themeRed)),
               ),
-              
               const SizedBox(height: 32),
               const Text("Didn't receive the code?", style: TextStyle(color: Color(0xFF757575))),
               TextButton(
-                onPressed: () {
-                   // هنا يمكنك إضافة دالة إعادة الإرسال
-                },
+                onPressed: () {},
                 child: const Text('↻ Resend code', style: TextStyle(color: themeRed, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 24),
-              
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -120,11 +103,7 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 20, 
-                          height: 20, 
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                        )
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -165,7 +144,7 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
         maxLength: 1,
         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         decoration: const InputDecoration(
-          counterText: "", 
+          counterText: "",
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
         ),

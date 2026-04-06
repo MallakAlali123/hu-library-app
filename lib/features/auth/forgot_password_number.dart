@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-// تأكد أن هذا الاسم يطابق اسم ملفك الحقيقي
-import 'forgot_password_verify_n.dart'; 
+import 'package:go_router/go_router.dart';
 
 class ForgotPasswordNumber extends StatefulWidget {
   const ForgotPasswordNumber({super.key});
@@ -28,18 +27,10 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
     }
 
     setState(() => _isLoading = true);
-    
-    // محاكاة إرسال الكود
     await Future.delayed(const Duration(seconds: 1));
-    
     if (!mounted) return;
     setState(() => _isLoading = false);
-
-    // الانتقال لصفحة التحقق
-    Navigator.push(
-      context, 
-      MaterialPageRoute(builder: (_) => ForgotPasswordVerify_n()),
-    );
+    context.go('/forgot-password-verify-n');
   }
 
   @override
@@ -53,7 +44,7 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/forgot-password'),
         ),
         title: const Text(
           'Forgot Password',
@@ -79,12 +70,7 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
               const SizedBox(height: 30),
               const Text(
                 'Reset\nPassword',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0D1B3E),
-                  height: 1.2,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0D1B3E), height: 1.2),
               ),
               const SizedBox(height: 12),
               const Text(
@@ -125,11 +111,7 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -147,7 +129,7 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
                   children: [
                     const Text('Remember your password? ', style: TextStyle(color: Color(0xFF888888), fontSize: 13)),
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => context.go('/login'),
                       child: const Text('Log in', style: TextStyle(color: themeRed, fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
                   ],

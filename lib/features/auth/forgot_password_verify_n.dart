@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// تأكد من وجود ملف new_password.dart في نفس المجلد
-import 'new_password.dart'; 
+import 'package:go_router/go_router.dart';
 
 class ForgotPasswordVerify_n extends StatefulWidget {
   const ForgotPasswordVerify_n({super.key});
@@ -17,12 +16,8 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
+    for (var controller in _controllers) controller.dispose();
+    for (var node in _focusNodes) node.dispose();
     super.dispose();
   }
 
@@ -37,15 +32,9 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
 
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
-
     if (!mounted) return;
-
-    // سيقوم هذا الزر بنقلك لصفحة NewPassword الحقيقية
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const NewPassword()),
-    );
+    setState(() => _isLoading = false);
+    context.go('/new-password');
   }
 
   @override
@@ -59,7 +48,7 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/forgot-password-number'),
         ),
         title: const Text(
           'Verify Number',
@@ -93,21 +82,16 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
                 style: TextStyle(color: Color(0xFF757575), fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 60),
-              
-              // حقول الـ OTP بالخطوط السفلية
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(6, (index) => _buildOtpUnderlineField(index, themeRed)),
               ),
-              
               const SizedBox(height: 40),
               const Text(
                 'Didn\'t receive the code? Resend in 0:59',
                 style: TextStyle(color: themeRed, fontWeight: FontWeight.w500, fontSize: 13),
               ),
-              
               const SizedBox(height: 100),
-              
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -119,15 +103,8 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
                     elevation: 2,
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Verify & Proceed',
-                          style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Verify & Proceed', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),

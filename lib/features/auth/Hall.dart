@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HallScreen extends StatefulWidget {
   const HallScreen({super.key});
@@ -45,15 +46,11 @@ class _HallScreenState extends State<HallScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFFCC3333)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/student'),
         ),
         title: const Text(
           'Reserve a Space',
-          style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
@@ -66,8 +63,6 @@ class _HallScreenState extends State<HallScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          // ── Tabs ─────────────────────────────────────────
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -75,25 +70,20 @@ class _HallScreenState extends State<HallScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: const Color(0xFFCC3333), width: 2),
+                      bottom: BorderSide(color: Color(0xFFCC3333), width: 2),
                     ),
                   ),
                   child: const Text(
                     'All Rooms',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFCC3333),
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFCC3333)),
                   ),
                 ),
               ],
             ),
           ),
 
-          // ── Filters ───────────────────────────────────────
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -101,26 +91,16 @@ class _HallScreenState extends State<HallScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _FilterChip(
-                    label: _selectedCapacity,
-                    onTap: () {},
-                  ),
+                  _FilterChip(label: _selectedCapacity, onTap: () {}),
                   const SizedBox(width: 8),
-                  _FilterChip(
-                    label: _selectedFloor,
-                    onTap: () {},
-                  ),
+                  _FilterChip(label: _selectedFloor, onTap: () {}),
                   const SizedBox(width: 8),
-                  _FilterChip(
-                    label: _selectedAvailability,
-                    onTap: () {},
-                  ),
+                  _FilterChip(label: _selectedAvailability, onTap: () {}),
                 ],
               ),
             ),
           ),
 
-          // ── Room List ──────────────────────────────────────
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -133,9 +113,12 @@ class _HallScreenState extends State<HallScreen> {
         ],
       ),
 
-      // ── Bottom Navigation Bar ─────────────────────────────
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
+        onTap: (index) {
+          if (index == 0) context.go('/student');
+          if (index == 3) context.go('/profile');
+        },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFFCC3333),
@@ -154,8 +137,6 @@ class _HallScreenState extends State<HallScreen> {
   }
 }
 
-// ── Filter Chip ───────────────────────────────────────────────────────────────
-
 class _FilterChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
@@ -164,35 +145,27 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE0E0E0)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF444444)),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF888888)),
-            ],
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF444444))),
+            const SizedBox(width: 4),
+            const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF888888)),
+          ],
         ),
       ),
     );
   }
 }
-
-// ── Room Card ─────────────────────────────────────────────────────────────────
 
 class _RoomCard extends StatelessWidget {
   final _RoomItem room;
@@ -217,8 +190,6 @@ class _RoomCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          // Room Image
           Stack(
             children: [
               ClipRRect(
@@ -242,48 +213,30 @@ class _RoomCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: room.status == 'AVAILABLE'
-                          ? const Color(0xFF2E7D32)
-                          : const Color(0xFFCC3333),
+                      color: room.status == 'AVAILABLE' ? const Color(0xFF2E7D32) : const Color(0xFFCC3333),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       room.status,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
                     ),
                   ),
                 ),
             ],
           ),
 
-          // Room Info
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  room.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                ),
+                Text(room.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     const Icon(Icons.people_outline_rounded, size: 14, color: Color(0xFF888888)),
                     const SizedBox(width: 4),
-                    Text(
-                      'Capacity: ${room.capacity}',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
-                    ),
+                    Text('Capacity: ${room.capacity}', style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -291,32 +244,22 @@ class _RoomCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF888888)),
                     const SizedBox(width: 4),
-                    Text(
-                      room.floor,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
-                    ),
+                    Text(room.floor, style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
                   ],
                 ),
                 const SizedBox(height: 14),
-
-                // Book Room Button
                 SizedBox(
                   width: double.infinity,
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Book room
-                    },
+                    onPressed: () => context.go('/book-room'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFCC3333),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Book Room',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
+                    child: const Text('Book Room', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -327,8 +270,6 @@ class _RoomCard extends StatelessWidget {
     );
   }
 }
-
-// ── Data Model ────────────────────────────────────────────────────────────────
 
 class _RoomItem {
   final String name;
