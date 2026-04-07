@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class NewPassword extends StatefulWidget {
-  // ملاحظة: حذفنا const من هنا لأن الصفحة تحتوي على متغيرات ديناميكية (Controllers)
   const NewPassword({super.key});
 
   @override
@@ -14,7 +14,6 @@ class _NewPasswordState extends State<NewPassword> {
   bool _isPasswordVisible = false;
   bool _isConfirmVisible = false;
 
-  // إضافة dispose لتنظيف الذاكرة
   @override
   void dispose() {
     _passwordController.dispose();
@@ -44,8 +43,7 @@ class _NewPasswordState extends State<NewPassword> {
       ),
     );
 
-    // العودة لصفحة تسجيل الدخول وتفريغ الذاكرة
-    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    context.go('/login');
   }
 
   @override
@@ -59,7 +57,7 @@ class _NewPasswordState extends State<NewPassword> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/forgot-password-verify'),
         ),
         title: const Text(
           'Security',
@@ -99,21 +97,16 @@ class _NewPasswordState extends State<NewPassword> {
                 ),
               ),
               const SizedBox(height: 40),
-              
               _buildLabel('New Password'),
               _buildPasswordField(_passwordController, _isPasswordVisible, () {
                 setState(() => _isPasswordVisible = !_isPasswordVisible);
               }, 'Enter new password'),
-              
               const SizedBox(height: 20),
-              
               _buildLabel('Confirm Password'),
               _buildPasswordField(_confirmPasswordController, _isConfirmVisible, () {
                 setState(() => _isConfirmVisible = !_isConfirmVisible);
               }, 'Confirm your new password'),
-
               const SizedBox(height: 30),
-              
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -134,9 +127,7 @@ class _NewPasswordState extends State<NewPassword> {
                   ],
                 ),
               ),
-              
               const SizedBox(height: 40),
-              
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -153,13 +144,10 @@ class _NewPasswordState extends State<NewPassword> {
                   ),
                 ),
               ),
-              
               const SizedBox(height: 24),
               Center(
                 child: TextButton(
-                  onPressed: () {
-                    // يمكنك إضافة رابط لفتح الدعم الفني هنا
-                  },
+                  onPressed: () {},
                   child: RichText(
                     text: const TextSpan(
                       text: 'Need help? ',
