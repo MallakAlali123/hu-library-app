@@ -81,15 +81,15 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 decoration: const InputDecoration(
                   hintText: 'Search title, author, or ISBN...',
                   hintStyle: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
-                  prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
+                  prefixIcon:
+                      Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -114,9 +114,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 ),
               ],
             ),
-
             const SizedBox(height: 14),
-
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -145,9 +143,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 );
               },
             ),
-
             const SizedBox(height: 20),
-
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -194,17 +190,24 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
           ],
         ),
       ),
 
+      // ✅ التعديل هنا
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-          if (index == 3) {
+
+          if (index == 0) {
+            context.go('/search');
+          } else if (index == 1) {
+            context.go('/my-requests');
+          } else if (index == 2) {
+            context.go('/my-books');
+          } else if (index == 3) {
             context.go('/profile');
           }
         },
@@ -212,14 +215,19 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFFCC3333),
         unselectedItemColor: const Color(0xFFAAAAAA),
-        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        selectedLabelStyle:
+            const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         elevation: 8,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'SEARCH'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.search_rounded), label: 'SEARCH'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
         ],
       ),
     );

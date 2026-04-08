@@ -93,6 +93,18 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
+  path: '/search',
+  builder: (context, state) => const Scaffold(
+    body: Center(child: Text('البحث - قريباً')),
+  ),
+),
+GoRoute(
+  path: '/my-books',
+  builder: (context, state) => const Scaffold(
+    body: Center(child: Text('كتبي - قريباً')),
+  ),
+),
+    GoRoute(
       path: '/librarian',
       builder: (context, state) => const Scaffold(
         body: Center(child: Text('شاشة الأمين - قريباً')),
