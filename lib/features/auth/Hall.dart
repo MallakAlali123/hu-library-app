@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HallScreen extends StatefulWidget {
   const HallScreen({super.key});
@@ -9,34 +10,6 @@ class HallScreen extends StatefulWidget {
 }
 
 class _HallScreenState extends State<HallScreen> {
-  String _selectedCapacity = 'Capacity: 1-4';
-  String _selectedFloor = 'Floor 2';
-  String _selectedAvailability = 'Available Now';
-
-  final List<_RoomItem> _rooms = const [
-    _RoomItem(
-      name: 'AAAAAAA',
-      capacity: 'Up to 2 people',
-      floor: 'Floor 2',
-      status: 'AVAILABLE',
-      imageAsset: 'assets/images/room1.jpg',
-    ),
-    _RoomItem(
-      name: 'BBBBBBB',
-      capacity: 'Up to 8 people',
-      floor: 'Floor 1',
-      status: 'RESERVED',
-      imageAsset: 'assets/images/room2.jpg',
-    ),
-    _RoomItem(
-      name: 'CCCCCCC',
-      capacity: 'Up to 12 people',
-      floor: 'Floor 3',
-      status: '',
-      imageAsset: 'assets/images/room3.jpg',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,6 +36,7 @@ class _HallScreenState extends State<HallScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Tabs ─────────────────────────────────────────
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -71,9 +45,7 @@ class _HallScreenState extends State<HallScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFCC3333), width: 2),
-                    ),
+                    border: Border(bottom: BorderSide(color: Color(0xFFCC3333), width: 2)),
                   ),
                   child: const Text(
                     'All Rooms',
@@ -84,29 +56,84 @@ class _HallScreenState extends State<HallScreen> {
             ),
           ),
 
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _FilterChip(label: _selectedCapacity, onTap: () {}),
-                  const SizedBox(width: 8),
-                  _FilterChip(label: _selectedFloor, onTap: () {}),
-                  const SizedBox(width: 8),
-                  _FilterChip(label: _selectedAvailability, onTap: () {}),
-                ],
-              ),
-            ),
-          ),
-
+          // ── Room List من Firebase (معدل للتصحيح) ──────────────────────────
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: _rooms.length,
-              itemBuilder: (context, index) {
-                return _RoomCard(room: _rooms[index]);
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('halls').snapshots(),
+              builder: (context, snapshot) {
+                
+                // 1. طباعة حالة الاتصال للتصحيح (Debug)
+                print("Connection State: ${snapshot.connectionState}");
+
+                // Loading
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFCC3333)),
+                  );
+                }
+
+                // Error
+                if (snapshot.hasError) {
+                  print("Firebase Error: ${snapshot.error}"); // طباعة الخطأ في الكونسول
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                        const SizedBox(height: 10),
+                        Text('Error: ${snapshot.error}'),
+                      ],
+                    ),
+                  );
+                }
+
+                // 2. التحقق من وجود البيانات
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  print("No Data Found in 'halls' collection."); // طباعة للتصحيح
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.meeting_room_outlined, size: 64, color: Color(0xFFCC3333)),
+                        SizedBox(height: 16),
+                        Text(
+                          'No halls available',
+                          style: TextStyle(color: Color(0xFF888888)),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Check Collection Name in Firebase',
+                          style: TextStyle(color: Colors.red, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // 3. البيانات موجودة
+                final halls = snapshot.data!.docs;
+                print("Data Loaded Successfully. Count: ${halls.length}"); // طباعة عدد الغرف
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  itemCount: halls.length,
+                  itemBuilder: (context, index) {
+                    // جلب البيانات وتحويلها لـ Map
+                    final data = halls[index].data() as Map<String, dynamic>;
+
+                    // معالجة البيانات بأمان (إضافة toString لتجنب الأخطاء)
+                    return _RoomCard(
+                      room: _RoomItem(
+                        name: data['name'] ?? 'Unknown Room',
+                        capacity: data['capacity']?.toString() ?? '0', // تحويل لرقم نصي
+                        floor: data['floor'] ?? 'Unknown Floor',
+                        status: data['status'] == 'available' ? 'AVAILABLE' : 'RESERVED',
+                        // استخدام باقي القسمة لتجنب تكرار أسماء الصور إذا كانت الغرف كثيرة
+                        imageAsset: 'assets/images/room${(index + 1) % 3 + 1}.jpg', 
+                      ),
+                    );
+                  },
+                );
               },
             ),
           ),
@@ -137,36 +164,6 @@ class _HallScreenState extends State<HallScreen> {
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _FilterChip({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF444444))),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF888888)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _RoomCard extends StatelessWidget {
   final _RoomItem room;
 
@@ -180,11 +177,7 @@ class _RoomCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -203,6 +196,7 @@ class _RoomCard extends StatelessWidget {
                     width: double.infinity,
                     height: 150,
                     color: const Color(0xFF8B2222),
+                    child: const Icon(Icons.meeting_room_outlined, size: 60, color: Colors.white),
                   ),
                 ),
               ),
@@ -218,7 +212,7 @@ class _RoomCard extends StatelessWidget {
                     ),
                     child: Text(
                       room.status,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ),
@@ -252,14 +246,20 @@ class _RoomCard extends StatelessWidget {
                   width: double.infinity,
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: () => context.go('/book-room'),
+                    onPressed: room.status == 'RESERVED'
+                        ? null
+                        : () => context.go('/book-room'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFCC3333),
                       foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       elevation: 0,
                     ),
-                    child: const Text('Book Room', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      room.status == 'RESERVED' ? 'Reserved' : 'Book Room',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],

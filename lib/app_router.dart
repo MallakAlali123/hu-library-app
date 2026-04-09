@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 // Auth
 import 'features/auth/splash_screen.dart';
@@ -21,10 +20,13 @@ import 'features/auth/forgot_password_verify.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   routes: [
+    // ── Splash ────────────────────────────────────
     GoRoute(
       path: '/',
       builder: (context, state) => const SplashScreen(),
     ),
+
+    // ── Auth ──────────────────────────────────────
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
@@ -60,6 +62,8 @@ final GoRouter appRouter = GoRouter(
       path: '/new-password',
       builder: (context, state) => const NewPassword(),
     ),
+
+    // ── Student ───────────────────────────────────
     GoRoute(
       path: '/student',
       builder: (context, state) => const LibraryServicesPage(),
@@ -81,39 +85,121 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const DonateScreen(),
     ),
     GoRoute(
-      path: '/book-suggestion',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Book Suggestion - قريباً')),
+      path: '/search',
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Search Books'),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1A1A1A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.go('/student'),
+          ),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search_rounded, size: 64, color: Color(0xFFCC3333)),
+              SizedBox(height: 16),
+              Text('Search coming soon...', style: TextStyle(fontSize: 16, color: Color(0xFF888888))),
+            ],
+          ),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/my-books',
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(
+          title: const Text('My Books'),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1A1A1A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.go('/student'),
+          ),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.menu_book_rounded, size: 64, color: Color(0xFFCC3333)),
+              SizedBox(height: 16),
+              Text('My Books coming soon...', style: TextStyle(fontSize: 16, color: Color(0xFF888888))),
+            ],
+          ),
+        ),
       ),
     ),
     GoRoute(
       path: '/my-requests',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('طلباتي - قريباً')),
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(
+          title: const Text('My Requests'),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1A1A1A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.go('/student'),
+          ),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.assignment_outlined, size: 64, color: Color(0xFFCC3333)),
+              SizedBox(height: 16),
+              Text('My Requests coming soon...', style: TextStyle(fontSize: 16, color: Color(0xFF888888))),
+            ],
+          ),
+        ),
       ),
     ),
     GoRoute(
-  path: '/search',
-  builder: (context, state) => const Scaffold(
-    body: Center(child: Text('البحث - قريباً')),
-  ),
-),
-GoRoute(
-  path: '/my-books',
-  builder: (context, state) => const Scaffold(
-    body: Center(child: Text('كتبي - قريباً')),
-  ),
-),
+      path: '/book-suggestion',
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Book Suggestion'),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1A1A1A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.go('/student'),
+          ),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lightbulb_outline_rounded, size: 64, color: Color(0xFFCC3333)),
+              SizedBox(height: 16),
+              Text('Book Suggestion coming soon...', style: TextStyle(fontSize: 16, color: Color(0xFF888888))),
+            ],
+          ),
+        ),
+      ),
+    ),
+
+    // ── Librarian ─────────────────────────────────
     GoRoute(
       path: '/librarian',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('شاشة الأمين - قريباً')),
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(title: const Text('Librarian Dashboard')),
+        body: const Center(child: Text('شاشة الأمين - قريباً')),
       ),
     ),
+
+    // ── Admin ─────────────────────────────────────
     GoRoute(
       path: '/admin',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('شاشة الأدمن - قريباً')),
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(title: const Text('Admin Dashboard')),
+        body: const Center(child: Text('شاشة الأدمن - قريباً')),
       ),
     ),
   ],

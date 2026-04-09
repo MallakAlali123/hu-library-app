@@ -50,17 +50,12 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         elevation: 0,
         title: const Text(
           'Library Services',
-          style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded,
-                color: Color(0xFF1A1A1A)),
+            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF1A1A1A)),
             onPressed: () {},
           ),
         ],
@@ -70,51 +65,48 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE8E8E8)),
-              ),
-              child: TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Search title, author, or ISBN...',
-                  hintStyle: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
-                  prefixIcon:
-                      Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
-                  border: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            GestureDetector(
+              onTap: () => context.go('/search'),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                ),
+                child: const TextField(
+                  enabled: false,
+                  decoration: InputDecoration(
+                    hintText: 'Search title, author, or ISBN...',
+                    hintStyle: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+                    prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
                 ),
               ),
             ),
+
             const SizedBox(height: 24),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Services & Requests',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
                 ),
                 GestureDetector(
                   onTap: () {},
                   child: const Text(
                     'View All',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFCC3333),
-                    ),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFCC3333)),
                   ),
                 ),
               ],
             ),
+
             const SizedBox(height: 14),
+
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -143,7 +135,9 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 );
               },
             ),
+
             const SizedBox(height: 20),
+
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -159,11 +153,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                       color: const Color(0xFFCC3333),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.help_outline_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
+                    child: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 24),
                   ),
                   const SizedBox(width: 14),
                   const Column(
@@ -171,63 +161,45 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                     children: [
                       Text(
                         'Need help?',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
-                        ),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
                       ),
                       SizedBox(height: 3),
                       Text(
                         'Chat with our librarian available 24/7',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF888888),
-                        ),
+                        style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
           ],
         ),
       ),
 
-      // ✅ التعديل هنا
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-
-          if (index == 0) {
-            context.go('/search');
-          } else if (index == 1) {
-            context.go('/my-requests');
-          } else if (index == 2) {
-            context.go('/my-books');
-          } else if (index == 3) {
-            context.go('/profile');
-          }
+          if (index == 0) context.go('/search');
+          if (index == 1) context.go('/my-requests');
+          if (index == 2) context.go('/my-books');
+          if (index == 3) context.go('/profile');
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFFCC3333),
         unselectedItemColor: const Color(0xFFAAAAAA),
-        selectedLabelStyle:
-            const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         elevation: 8,
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.search_rounded), label: 'SEARCH'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
+          BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'SEARCH'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
         ],
       ),
     );
@@ -252,9 +224,7 @@ class _ServiceCard extends StatelessWidget {
             Image.asset(
               service.imageAsset,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFF8B2222),
-              ),
+              errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF8B2222)),
             ),
             Container(
               decoration: const BoxDecoration(
@@ -276,11 +246,7 @@ class _ServiceCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       service.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -298,9 +264,5 @@ class _ServiceItem {
   final IconData icon;
   final String imageAsset;
 
-  const _ServiceItem({
-    required this.title,
-    required this.icon,
-    required this.imageAsset,
-  });
+  const _ServiceItem({required this.title, required this.icon, required this.imageAsset});
 }
