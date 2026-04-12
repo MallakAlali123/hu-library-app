@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
+import 'notifications_screen.dart';
+import 'saved_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,11 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         title: const Text(
           'Student Profile',
-          style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
@@ -40,7 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             const SizedBox(height: 24),
-
             Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -55,72 +52,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fit: BoxFit.cover,
                     ),
                     border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
                   ),
                   child: const Icon(Icons.person, size: 50, color: Color(0xFFAAAAAA)),
                 ),
                 Container(
-                  width: 26,
-                  height: 26,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFCC3333),
-                    shape: BoxShape.circle,
-                  ),
+                  width: 26, height: 26,
+                  decoration: const BoxDecoration(color: Color(0xFFCC3333), shape: BoxShape.circle),
                   child: const Icon(Icons.edit, color: Colors.white, size: 14),
                 ),
               ],
             ),
-
             const SizedBox(height: 14),
-
-            const Text(
-              'Name',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
+            const Text('Name', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
             const SizedBox(height: 4),
-            const Text(
-              'ID:',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFFCC3333),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            const Text('ID:', style: TextStyle(fontSize: 13, color: Color(0xFFCC3333), fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
-            const Text(
-              'Department of',
-              style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
-            ),
-
+            const Text('Department of', style: TextStyle(fontSize: 13, color: Color(0xFF888888))),
             const SizedBox(height: 16),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _StatItem(value: '12', label: 'Courses'),
-                Container(
-                  width: 1,
-                  height: 30,
-                  color: const Color(0xFFE0E0E0),
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                ),
+                Container(width: 1, height: 30, color: const Color(0xFFE0E0E0), margin: const EdgeInsets.symmetric(horizontal: 24)),
                 _StatItem(value: '4th', label: 'Year'),
               ],
             ),
-
             const SizedBox(height: 28),
-
             _SectionHeader(title: 'LIBRARY & ACTIVITY'),
-
             _MenuItem(
               icon: Icons.menu_book_outlined,
               iconColor: const Color(0xFFCC3333),
@@ -128,33 +87,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: '3 books currently due',
               onTap: () {},
             ),
+            // ✅ Saved تفتح صفحة الكتب المحفوظة
             _MenuItem(
               icon: Icons.bookmark_border_rounded,
               iconColor: const Color(0xFFCC3333),
               title: 'Saved',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SavedScreen()),
+                );
+              },
             ),
-
             const SizedBox(height: 8),
-
             _SectionHeader(title: 'PREFERENCES'),
-
+            // ✅ Notifications تفتح صفحة الإشعارات مع عدد حقيقي
             _MenuItem(
               icon: Icons.notifications_none_rounded,
               iconColor: const Color(0xFFCC3333),
               title: 'Notifications',
-              badge: '2',
-              onTap: () {},
+              badge: NotificationsManager().unreadCount > 0
+                  ? '${NotificationsManager().unreadCount}'
+                  : null,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                ).then((_) => setState(() {}));
+              },
             ),
-            _MenuItem(
-              icon: Icons.settings_outlined,
-              iconColor: const Color(0xFFCC3333),
-              title: 'Settings',
-              onTap: () {},
-            ),
-
+          
             const SizedBox(height: 24),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
@@ -163,10 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.logout_rounded, size: 20),
-                  label: const Text(
-                    'Logout',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  label: const Text('Logout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFFCC3333),
@@ -179,21 +139,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
           ],
         ),
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(
-                builder: (context) => const LibraryServicesPage(),
-              ),
+              MaterialPageRoute(builder: (context) => const LibraryServicesPage()),
               (route) => false,
             );
           }
@@ -226,19 +182,9 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1A1A),
-          ),
-        ),
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
-        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
       ],
     );
   }
@@ -255,15 +201,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF888888),
-            letterSpacing: 1.2,
-          ),
-        ),
+        child: Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF888888), letterSpacing: 1.2)),
       ),
     );
   }
@@ -290,34 +228,17 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         onTap: onTap,
         leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFEEEE),
-            borderRadius: BorderRadius.circular(10),
-          ),
+          width: 40, height: 40,
+          decoration: BoxDecoration(color: const Color(0xFFFFEEEE), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: iconColor, size: 20),
         ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
         subtitle: subtitle != null
-            ? Text(
-                subtitle!,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
-              )
+            ? Text(subtitle!, style: const TextStyle(fontSize: 12, color: Color(0xFF888888)))
             : null,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -325,18 +246,8 @@ class _MenuItem extends StatelessWidget {
             if (badge != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCC3333),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  badge!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFCC3333), borderRadius: BorderRadius.circular(12)),
+                child: Text(badge!, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             const SizedBox(width: 6),
             const Icon(Icons.chevron_right_rounded, color: Color(0xFFCCCCCC)),
