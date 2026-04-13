@@ -56,7 +56,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF1A1A1A)),
-            onPressed: () {},
+            onPressed: () {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('More options clicked')),
+               );
+            },
           ),
         ],
       ),
@@ -83,11 +87,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: const Icon(Icons.person, size: 50, color: Color(0xFFAAAAAA)),
                       ),
-                      Container(
-                        width: 26,
-                        height: 26,
-                        decoration: const BoxDecoration(color: Color(0xFFCC3333), shape: BoxShape.circle),
-                        child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                      GestureDetector(
+                        onTap: () {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             const SnackBar(content: Text('Edit Profile feature coming soon')),
+                           );
+                        },
+                        child: Container(
+                          width: 26,
+                          height: 26,
+                          decoration: const BoxDecoration(color: Color(0xFFCC3333), shape: BoxShape.circle),
+                          child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                        ),
                       ),
                     ],
                   ),
@@ -134,13 +145,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     iconColor: const Color(0xFFCC3333),
                     title: 'My Borrowed Books',
                     subtitle: '3 books currently due',
-                    onTap: () {},
+                    onTap: () {
+                      context.go('/my-books'); 
+                    },
                   ),
+                  
                   _MenuItem(
                     icon: Icons.bookmark_border_rounded,
                     iconColor: const Color(0xFFCC3333),
                     title: 'Saved',
-                    onTap: () {},
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Saved Books screen coming soon')),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 8),
@@ -151,14 +169,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.notifications_none_rounded,
                     iconColor: const Color(0xFFCC3333),
                     title: 'Notifications',
-                    badge: '2',
-                    onTap: () {},
+                    badge: '2', 
+                    onTap: () {
+                      context.go('/notifications');
+                    },
                   ),
+                  
+                  // ✅ تم تعديل زر الإعدادات لفتح الشاشة الجديدة
                   _MenuItem(
                     icon: Icons.settings_outlined,
                     iconColor: const Color(0xFFCC3333),
                     title: 'Settings',
-                    onTap: () {},
+                    onTap: () {
+                      context.go('/settings'); // فتح شاشة الإعدادات
+                    },
                   ),
 
                   const SizedBox(height: 24),
@@ -194,6 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         currentIndex: 3,
         onTap: (index) {
           if (index == 0) context.go('/student');
+          if (index == 1) context.go('/hall');
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,

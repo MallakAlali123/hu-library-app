@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// Auth
+// استيراد الشاشات
 import 'features/auth/splash_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/signup_screen.dart';
-import 'features/auth/VE_Signup.dart';
-import 'features/auth/home_page.dart';
+import 'features/auth/VE_Signup.dart'; // Verify Email Signup
+import 'features/auth/home_page.dart'; // LibraryServicesPage
 import 'features/auth/profile_screen.dart';
-import 'features/auth/Hall.dart';
-import 'features/auth/BookRoom1.dart';
-import 'features/auth/donate.dart';
+import 'features/auth/Hall.dart'; // HallScreen
+import 'features/auth/BookRoom1.dart'; // BookRoom1Screen
+import 'features/auth/donate.dart'; // DonateScreen
 import 'features/auth/New_Password.dart';
 import 'features/auth/forgot_password_email.dart';
 import 'features/auth/forgot_password_number.dart';
 import 'features/auth/forgot_password_verify_n.dart';
 import 'features/auth/forgot_password_verify.dart';
+import 'features/auth/notifications_screen.dart'; // ✅ شاشة الإشعارات
+import 'features/auth/settings_screen.dart'; // ✅ شاشة الإعدادات الجديدة
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -56,34 +58,40 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/forgot-password-verify-n',
-      builder: (context, state) => ForgotPasswordVerify_n(),
+      builder: (context, state) => const ForgotPasswordVerify_n(),
     ),
     GoRoute(
       path: '/new-password',
       builder: (context, state) => const NewPassword(),
     ),
 
-    // ── Student ───────────────────────────────────
+    // ── Student (Main App) ───────────────────────
     GoRoute(
       path: '/student',
       builder: (context, state) => const LibraryServicesPage(),
     ),
+    
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
     ),
+    
     GoRoute(
       path: '/hall',
       builder: (context, state) => const HallScreen(),
     ),
+    
     GoRoute(
       path: '/book-room',
       builder: (context, state) => const BookRoom1Screen(),
     ),
+    
     GoRoute(
       path: '/donate',
       builder: (context, state) => const DonateScreen(),
     ),
+
+    // ── Features (Coming Soon / Placeholders) ────
     GoRoute(
       path: '/search',
       builder: (context, state) => Scaffold(
@@ -109,11 +117,12 @@ final GoRouter appRouter = GoRouter(
         ),
       ),
     ),
+    
     GoRoute(
-      path: '/my-books',
+      path: '/my-books', 
       builder: (context, state) => Scaffold(
         appBar: AppBar(
-          title: const Text('My Books'),
+          title: const Text('My Borrowed Books'),
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFF1A1A1A),
           elevation: 0,
@@ -134,6 +143,7 @@ final GoRouter appRouter = GoRouter(
         ),
       ),
     ),
+    
     GoRoute(
       path: '/my-requests',
       builder: (context, state) => Scaffold(
@@ -159,6 +169,7 @@ final GoRouter appRouter = GoRouter(
         ),
       ),
     ),
+    
     GoRoute(
       path: '/book-suggestion',
       builder: (context, state) => Scaffold(
@@ -185,7 +196,18 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
 
-    // ── Librarian ─────────────────────────────────
+    // ── Notifications & Settings ───────────────────
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationsScreen(),
+    ),
+
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+
+    // ── Librarian & Admin ─────────────────────────
     GoRoute(
       path: '/librarian',
       builder: (context, state) => Scaffold(
@@ -194,7 +216,6 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
 
-    // ── Admin ─────────────────────────────────────
     GoRoute(
       path: '/admin',
       builder: (context, state) => Scaffold(

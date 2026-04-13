@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+// تأكد من كتابة اسم المشروع الصحيح (hu_library_app)
 import 'app_router.dart';
 
 void main() async {
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      routerConfig: appRouter,
+      routerConfig: appRouter, // إذا استمر الخطأ، جرب تغيير هذا الاسم إلى router
     );
   }
 }

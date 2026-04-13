@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/request_service.dart';
 
 class BookRoom1Screen extends StatefulWidget {
@@ -11,8 +10,9 @@ class BookRoom1Screen extends StatefulWidget {
 }
 
 class _BookRoom1ScreenState extends State<BookRoom1Screen> {
-  DateTime _currentMonth = DateTime(2024, 11);
-  int? _selectedDay = 5;
+  // تعديل 1: جعل الشهر يبدأ من الشهر الحالي بدلاً من نوفمبر 2024 الثابت
+  DateTime _currentMonth = DateTime.now(); 
+  int? _selectedDay; // تم إزالة القيمة الافتراضية القديمة
   String? _selectedTime;
   bool _isLoading = false;
   final RequestService _requestService = RequestService();
@@ -22,12 +22,19 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     '10:30 AM',
     '12:00 PM',
     '01:30 PM',
-    '11:00 PM',
-    '09:30 PM',
+    '03:00 PM',
+    '04:30 PM',
   ];
 
   final Set<String> _bookedSlots = {'01:30 PM'};
   final String _currentSlot = '10:30 AM';
+
+  @override
+  void initState() {
+    super.initState();
+    // تعديل 2: اختيار يوم اليوم الحالي تلقائياً عند فتح الشاشة
+    _selectedDay = DateTime.now().day;
+  }
 
   void _previousMonth() {
     setState(() {
@@ -58,7 +65,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     return months[month - 1];
   }
 
-  // ── Reserve Now مع Firebase ──────────────────────────────
   void _handleReserve() async {
     if (_selectedDay == null || _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -135,8 +141,9 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
               borderRadius: BorderRadius.circular(14),
               child: Stack(
                 children: [
+                  // تعديل 3: تغيير الصورة لصورة موجودة لتجنب خطأ 404
                   Image.asset(
-                    'assets/images/hall_room1.jpg',
+                    'assets/images/hall.png',
                     width: double.infinity,
                     height: 160,
                     fit: BoxFit.cover,
@@ -144,6 +151,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                       width: double.infinity,
                       height: 160,
                       color: const Color(0xFF8B2222),
+                      child: const Icon(Icons.meeting_room, color: Colors.white70, size: 50),
                     ),
                   ),
                   Positioned(
