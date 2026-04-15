@@ -1,36 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'firebase_options.dart';
-// تأكد من كتابة اسم المشروع الصحيح (hu_library_app)
 import 'app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
-  runApp(const MyApp());
+  await EasyLocalization.ensureInitialized();
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('ar')],
+      path: 'assets/translations', 
+      fallbackLocale: const Locale('en'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<ThemeMode> _getThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDark = prefs.getBool('isDarkMode') ?? false;
+    return isDark ? ThemeMode.dark : ThemeMode.light;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'HU Library',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFCC3333),
-        ),
-        useMaterial3: true,
-      ),
-      routerConfig: appRouter, // إذا استمر الخطأ، جرب تغيير هذا الاسم إلى router
+    return FutureBuilder<ThemeMode>(
+      future: _getThemeMode(),
+      builder: (context, snapshot) {
+        final themeMode = snapshot.data ?? ThemeMode.light;
+
+        return MaterialApp.router(
+          // إعدادات الترجمة
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+
+          title: 'HU Library',
+          debugShowCheckedModeBanner: false,
+          
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFFCC3333),
+              brightness: Brightness.light,
+            ),
+          ),
+          
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            // هذا الثيم سيجعل كل الخلفيات سوداء تلقائياً
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFFCC3333),
+              brightness: Brightness.dark,
+            ),
+          ),
+          
+          // هذا السطر هو الذي يفعل الوضع الليلي
+          themeMode: themeMode,
+          
+          routerConfig: appRouter,
+        );
+      },
     );
   }
 }

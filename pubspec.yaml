@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   flutter:
-    sdk: flutter
+    sdk: flutter 
 
   cupertino_icons: ^1.0.8
 
@@ -29,7 +29,10 @@ dependencies:
 
   # Utils
   shared_preferences: ^2.2.2
-  intl: ^0.18.1
+  intl: ^0.20.2
+  
+ 
+  easy_localization: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -39,10 +42,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
- 
+
   assets:
     - assets/images/logo.png
     - assets/images/book_suggestion.png
     - assets/images/donate_book.png
     - assets/images/hall.png
     - assets/images/reserved.png
+    # كل صورة في سطر جديد
+    - assets/images/room1.jpg
+    - assets/images/room2.jpg
+    - assets/images/room3.jpg
+  
+    - assets/translations/

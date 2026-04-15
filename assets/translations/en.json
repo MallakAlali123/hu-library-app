@@ -1,0 +1,17 @@
+{
+  "app_title": "HU Library",
+  "settings": "Settings",
+  "account": "Account",
+  "display_name": "Display Name",
+  "save_changes": "Save Changes",
+  "appearance": "Appearance",
+  "dark_mode": "Dark Mode",
+  "enable_dark_theme": "Enable dark theme",
+  "general": "General",
+  "clear_cache": "Clear Cache",
+  "language": "Language",
+  "rate_us": "Rate Us",
+  "home": "Home",
+  "profile": "Profile",
+  "logout": "Logout"
+}
