@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 
 class ForgotPasswordVerify extends StatefulWidget {
   const ForgotPasswordVerify({super.key});
@@ -25,12 +26,13 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
     String code = _controllers.map((e) => e.text).join();
     if (code.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the full 6-digit code')),
+        SnackBar(content: Text('Please enter the full 6-digit code'.tr())),
       );
       return;
     }
 
     setState(() => _isLoading = true);
+    // محاكاة التحقق
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -39,20 +41,19 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
 
   @override
   Widget build(BuildContext context) {
-    const Color themeRed = Color(0xFFC62828);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: themeRed),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/forgot-password'),
         ),
-        title: const Text(
-          'Verification',
-          style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Verification'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
       ),
@@ -64,33 +65,42 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
               const SizedBox(height: 40),
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFEBEE),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.mark_email_read_outlined, size: 40, color: themeRed),
+                child: Icon(Icons.mark_email_read_outlined, size: 40, color: const Color(0xFFCC3333)),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Enter verification code',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0D1B3E)),
+              Text(
+                'Enter verification code'.tr(),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: 12),
-              const Text(
-                "We've sent a 6-digit code to\nyour university email. Please enter it\nbelow to reset your password.",
+              Text(
+                "We've sent a 6-digit code to\nyour university email. Please enter it\nbelow to reset your password.".tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF757575), fontSize: 14, height: 1.5),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), height: 1.5),
               ),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (index) => _buildOtpBox(index, themeRed)),
+                children: List.generate(6, (index) => _buildOtpBox(index)),
               ),
-              const SizedBox(height: 32),
-              const Text("Didn't receive the code?", style: TextStyle(color: Color(0xFF757575))),
+              const SizedBox(height: 24),
+              Center(
+                child: GestureDetector(
+                  onTap: () {}, // إضافة منطق الإعادة لاحقاً
+                  child: Text(
+                    'Didn\'t receive code?'.tr(),
+                    style: TextStyle(color: const Color(0xFFCC3333), fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
               TextButton(
                 onPressed: () {},
-                child: const Text('↻ Resend code', style: TextStyle(color: themeRed, fontWeight: FontWeight.bold)),
+                child: Text('↻ Resend code'.tr(), style: TextStyle(color: const Color(0xFFCC3333), fontWeight: FontWeight.bold, fontSize: 13)),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -99,26 +109,27 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleVerify,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: themeRed,
+                    backgroundColor: const Color(0xFFCC3333),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 2,
                   ),
                   child: _isLoading
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Row(
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Verify Code', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, color: Colors.white),
+                            Text('Verify Code'.tr(), style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
                           ],
                         ),
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
-                "Check your spam folder if you can't find the email.\nVerification codes are valid for 10 minutes.",
+              Text(
+                'Check your spam folder if you can\'t find the email. Verification codes are valid for 10 minutes.'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFFB0B0B0), fontSize: 11),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 11),
               ),
             ],
           ),
@@ -127,14 +138,14 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
     );
   }
 
-  Widget _buildOtpBox(int index, Color borderColor) {
+  Widget _buildOtpBox(int index) {
     return Container(
       width: 45,
       height: 55,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface, // ✅ لون دينامي
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: TextField(
         controller: _controllers[index],
@@ -142,7 +153,7 @@ class _ForgotPasswordVerifyState extends State<ForgotPasswordVerify> {
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         maxLength: 1,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
         decoration: const InputDecoration(
           counterText: "",
           border: InputBorder.none,

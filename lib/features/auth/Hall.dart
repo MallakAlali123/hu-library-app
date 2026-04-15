@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class HallScreen extends StatefulWidget {
   const HallScreen({super.key});
@@ -10,25 +11,45 @@ class HallScreen extends StatefulWidget {
 }
 
 class _HallScreenState extends State<HallScreen> {
+  // قائمة بأسماء الصور
+  final List<String> _roomImages = [
+    'assets/images/room1.jpg',
+    'assets/images/room2.jpg',
+    'assets/images/room3.jpg',
+  ];
+
+  // ✅ دالة مساعدة لحساب الحالة خارج const
+  String _getStatus(String? status) {
+    if (status == 'available') {
+      return 'AVAILABLE';
+    }
+    return 'RESERVED';
+  }
+
+  // ✅ دالة مساعدة للسعة خارج const
+  String _getCapacity(dynamic capacity) {
+    return capacity?.toString() ?? '0';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFFCC3333)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/student'),
         ),
-        title: const Text(
-          'Reserve a Space',
-          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Reserve a Space'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search_rounded, color: Color(0xFF1A1A1A)),
+            icon: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {},
           ),
         ],
@@ -38,7 +59,7 @@ class _HallScreenState extends State<HallScreen> {
         children: [
           // ── Tabs ─────────────────────────────────────────
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
@@ -47,39 +68,36 @@ class _HallScreenState extends State<HallScreen> {
                   decoration: const BoxDecoration(
                     border: Border(bottom: BorderSide(color: Color(0xFFCC3333), width: 2)),
                   ),
-                  child: const Text(
-                    'All Rooms',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFCC3333)),
+                  child: Text(
+                    'All Rooms'.tr(),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFCC3333)),
                   ),
                 ),
               ],
             ),
           ),
 
-          // ── Room List من Firebase (معدل للتصحيح) ──────────────────────────
+          // ── Room List من Firebase ──────────────────────────
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('halls').snapshots(),
               builder: (context, snapshot) {
                 
-                // 1. طباعة حالة الاتصال للتصحيح (Debug)
                 print("Connection State: ${snapshot.connectionState}");
 
-                // Loading
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: CircularProgressIndicator(color: Color(0xFFCC3333)),
                   );
                 }
 
-                // Error
                 if (snapshot.hasError) {
-                  print("Firebase Error: ${snapshot.error}"); // طباعة الخطأ في الكونسول
+                  print("Firebase Error: ${snapshot.error}");
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                        Icon(Icons.error_outline, color: Colors.red, size: 40),
                         const SizedBox(height: 10),
                         Text('Error: ${snapshot.error}'),
                       ],
@@ -87,51 +105,42 @@ class _HallScreenState extends State<HallScreen> {
                   );
                 }
 
-                // 2. التحقق من وجود البيانات
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  print("No Data Found in 'halls' collection."); // طباعة للتصحيح
-                  return const Center(
+                  print("No Data Found in 'halls' collection.");
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.meeting_room_outlined, size: 64, color: Color(0xFFCC3333)),
-                        SizedBox(height: 16),
-                        Text(
-                          'No halls available',
-                          style: TextStyle(color: Color(0xFF888888)),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Check Collection Name in Firebase',
-                          style: TextStyle(color: Colors.red, fontSize: 10),
-                        ),
+                        const Icon(Icons.meeting_room_outlined, size: 64, color: Color(0xFFCC3333)),
+                        const SizedBox(height: 16),
+                        Text('No halls available'.tr(), style: const TextStyle(color: Color(0xFF888888))),
+                        const SizedBox(height: 8),
+                        Text('Check Collection Name in Firebase'.tr(), style: const TextStyle(color: Colors.red, fontSize: 10)),
                       ],
                     ),
                   );
                 }
 
-                // 3. البيانات موجودة
                 final halls = snapshot.data!.docs;
-                print("Data Loaded Successfully. Count: ${halls.length}"); // طباعة عدد الغرف
+                print("Data Loaded Successfully. Count: ${halls.length}");
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   itemCount: halls.length,
                   itemBuilder: (context, index) {
-                    // جلب البيانات وتحويلها لـ Map
                     final data = halls[index].data() as Map<String, dynamic>;
 
-                    // معالجة البيانات بأمان (إضافة toString لتجنب الأخطاء)
-                    return _RoomCard(
-                      room: _RoomItem(
-                        name: data['name'] ?? 'Unknown Room',
-                        capacity: data['capacity']?.toString() ?? '0', // تحويل لرقم نصي
-                        floor: data['floor'] ?? 'Unknown Floor',
-                        status: data['status'] == 'available' ? 'AVAILABLE' : 'RESERVED',
-                        // استخدام باقي القسمة لتجنب تكرار أسماء الصور إذا كانت الغرف كثيرة
-                        imageAsset: 'assets/images/room${(index + 1) % 3 + 1}.jpg', 
-                      ),
-                    );
+                  return _RoomCard(
+                    room: _RoomItem(
+                      name: data['name'] ?? 'Unknown Room',
+                      // ✅ استخدام الدالة المساعدة بدلاً من المنطق المباشر
+                      capacity: _getCapacity(data['capacity']),
+                      floor: data['floor'] ?? 'Unknown Floor',
+                      // ✅ استخدام الدالة المساعدة
+                      status: _getStatus(data['status']),
+                      imageAsset: _roomImages[index % _roomImages.length],
+                    ),
+                  );
                   },
                 );
               },
@@ -147,9 +156,9 @@ class _HallScreenState extends State<HallScreen> {
           if (index == 3) context.go('/profile');
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         selectedItemColor: const Color(0xFFCC3333),
-        unselectedItemColor: const Color(0xFFAAAAAA),
+        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         elevation: 8,
@@ -157,7 +166,7 @@ class _HallScreenState extends State<HallScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
           BottomNavigationBarItem(icon: Icon(Icons.meeting_room_outlined), label: 'ROOMS'),
           BottomNavigationBarItem(icon: Icon(Icons.bookmark_border_rounded), label: 'BOOKINGS'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'PROFILE'),
         ],
       ),
     );
@@ -174,7 +183,7 @@ class _RoomCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2)),
@@ -224,21 +233,21 @@ class _RoomCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(room.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                Text(room.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.people_outline_rounded, size: 14, color: Color(0xFF888888)),
+                    Icon(Icons.people_outline_rounded, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     const SizedBox(width: 4),
-                    Text('Capacity: ${room.capacity}', style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
+                    Text('Capacity: ${room.capacity}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF888888)),
+                    Icon(Icons.location_on_outlined, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     const SizedBox(width: 4),
-                    Text(room.floor, style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
+                    Text(room.floor, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -257,7 +266,7 @@ class _RoomCard extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      room.status == 'RESERVED' ? 'Reserved' : 'Book Room',
+                      room.status == 'RESERVED' ? 'Reserved'.tr() : 'Book Room'.tr(),
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                   ),

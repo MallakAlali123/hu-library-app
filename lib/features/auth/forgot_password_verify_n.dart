@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 
 class ForgotPasswordVerify_n extends StatefulWidget {
   const ForgotPasswordVerify_n({super.key});
@@ -25,12 +26,13 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
     String code = _controllers.map((e) => e.text).join();
     if (code.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the 6-digit security code')),
+        SnackBar(content: Text('Please enter 6-digit security code'.tr())),
       );
       return;
     }
 
     setState(() => _isLoading = true);
+    // محاكاة التحقق
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -39,20 +41,19 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
 
   @override
   Widget build(BuildContext context) {
-    const Color themeRed = Color(0xFFC62828);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/forgot-password-number'),
         ),
-        title: const Text(
-          'Verify Number',
-          style: TextStyle(color: Color(0xFF0D1B3E), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Verify Number'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
       ),
@@ -64,32 +65,35 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
               const SizedBox(height: 40),
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFEBEE),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.phonelink_ring_rounded, size: 40, color: themeRed),
+                child: Icon(Icons.phonelink_ring_rounded, size: 40, color: const Color(0xFFCC3333)),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Enter verification code',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0D1B3E)),
+              Text(
+                'Enter verification code'.tr(),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: 12),
-              const Text(
-                "We've sent a 6-digit security code to your\nmobile device at ----------",
+              Text(
+                "We've sent a 6-digit security code to your\nmobile device at ----------".tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF757575), fontSize: 14, height: 1.5),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), height: 1.5),
               ),
               const SizedBox(height: 60),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (index) => _buildOtpUnderlineField(index, themeRed)),
+                children: List.generate(6, (index) => _buildOtpUnderlineField(index)),
               ),
               const SizedBox(height: 40),
-              const Text(
-                'Didn\'t receive the code? Resend in 0:59',
-                style: TextStyle(color: themeRed, fontWeight: FontWeight.w500, fontSize: 13),
+              GestureDetector(
+                onTap: () {}, // إضافة منطق إعادة الإرسال لاحقاً
+                child: Text(
+                  'Didn\'t receive code? Resend in 0:59'.tr(),
+                  style: TextStyle(color: const Color(0xFFCC3333), fontWeight: FontWeight.w500, fontSize: 13),
+                ),
               ),
               const SizedBox(height: 100),
               SizedBox(
@@ -98,7 +102,7 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleVerifyAndProceed,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: themeRed,
+                    backgroundColor: const Color(0xFFCC3333),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 2,
                   ),
@@ -108,10 +112,10 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'By verifying, you agree to our Terms of Service and Privacy Policy.',
+              Text(
+                'By verifying, you agree to our Terms of Service and Privacy Policy.'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFFB0B0B0), fontSize: 10),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 11),
               ),
             ],
           ),
@@ -120,7 +124,7 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
     );
   }
 
-  Widget _buildOtpUnderlineField(int index, Color activeColor) {
+  Widget _buildOtpUnderlineField(int index) {
     return SizedBox(
       width: 40,
       child: TextField(
@@ -129,14 +133,15 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         maxLength: 1,
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           counterText: "",
-          enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFD1D1D1), width: 2),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 2),
           ),
           focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: activeColor, width: 2),
+            borderSide: const BorderSide(color: Color(0xFFCC3333), width: 2),
           ),
         ),
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],

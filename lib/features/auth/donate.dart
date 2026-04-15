@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 import '../../services/book_service.dart';
 
 class DonateScreen extends StatefulWidget {
@@ -66,14 +67,15 @@ class _DonateScreenState extends State<DonateScreen> {
 
   void _handleSaveAsDraft() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saved as draft!')),
+      SnackBar(content: Text('Saved as draft!'.tr())),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -86,20 +88,20 @@ class _DonateScreenState extends State<DonateScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => context.go('/student'),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back_rounded,
-                        color: Color(0xFFCC3333),
+                        color: Theme.of(context).colorScheme.onSurface,
                         size: 24,
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Librarian: Add New Book',
+                        'Librarian: Add New Book'.tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -116,7 +118,7 @@ class _DonateScreenState extends State<DonateScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      const Text('Book Cover', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                      Text('Book Cover'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 12),
 
                       GestureDetector(
@@ -142,9 +144,9 @@ class _DonateScreenState extends State<DonateScreen> {
                                 child: const Icon(Icons.upload_file_rounded, color: Color(0xFFCC3333), size: 28),
                               ),
                               const SizedBox(height: 12),
-                              const Text('Upload Cover Image', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
+                              Text('Upload Cover Image'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                               const SizedBox(height: 4),
-                              const Text('PNG or JPG up to 10MB', style: TextStyle(fontSize: 12, color: Color(0xFF888888))),
+                              Text('PNG or JPG up to 10MB'.tr(), style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                             ],
                           ),
                         ),
@@ -152,26 +154,26 @@ class _DonateScreenState extends State<DonateScreen> {
 
                       const SizedBox(height: 24),
 
-                      const Text('Book Metadata', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                      Text('Book Metadata'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 16),
 
-                      const Text('Book Title', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
+                      Text('Book Title'.tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _titleController,
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
-                          hintText: 'Enter the full title of the book',
-                          hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
+                          hintText: 'Enter full title of the book'.tr(),
+                          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                           filled: true,
-                          fillColor: const Color(0xFFF9F9F9),
+                          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5)),
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) return 'Please enter the book title';
+                          if (value == null || value.trim().isEmpty) return 'Please enter the book title'.tr();
                           return null;
                         },
                       ),
@@ -184,23 +186,23 @@ class _DonateScreenState extends State<DonateScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Author', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
+                                Text('Author'.tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                                 const SizedBox(height: 8),
                                 TextFormField(
                                   controller: _authorController,
                                   textInputAction: TextInputAction.next,
                                   decoration: InputDecoration(
-                                    hintText: 'Author name',
-                                    hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
+                                    hintText: 'Author name'.tr(),
+                                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                                     filled: true,
-                                    fillColor: const Color(0xFFF9F9F9),
+                                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
                                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5)),
                                   ),
                                   validator: (value) {
-                                    if (value == null || value.trim().isEmpty) return 'Required';
+                                    if (value == null || value.trim().isEmpty) return 'Required'.tr();
                                     return null;
                                   },
                                 ),
@@ -212,19 +214,19 @@ class _DonateScreenState extends State<DonateScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('ISBN', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
+                                Text('ISBN'.tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                                 const SizedBox(height: 8),
                                 TextFormField(
                                   controller: _isbnController,
                                   textInputAction: TextInputAction.next,
                                   decoration: InputDecoration(
-                                    hintText: 'e.g. 978-3...',
-                                    hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
+                                    hintText: 'e.g. 978-3-16...'.tr(),
+                                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                                     filled: true,
-                                    fillColor: const Color(0xFFF9F9F9),
+                                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
                                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5)),
                                   ),
                                 ),
@@ -236,47 +238,47 @@ class _DonateScreenState extends State<DonateScreen> {
 
                       const SizedBox(height: 16),
 
-                      const Text('Summary / Description', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
+                      Text('Summary / Description'.tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _summaryController,
                         maxLines: 4,
                         decoration: InputDecoration(
-                          hintText: 'Provide a detailed summary...',
-                          hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
+                          hintText: 'Provide a detailed summary...'.tr(),
+                          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                           filled: true,
-                          fillColor: const Color(0xFFF9F9F9),
+                          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5)),
                         ),
                       ),
 
                       const SizedBox(height: 16),
 
-                      const Text('Category', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A))),
+                      Text('Category'.tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: _selectedCategory,
-                        hint: const Text('Select a category', style: TextStyle(color: Color(0xFFBBBBBB), fontSize: 13)),
+                        hint: Text('Select a category'.tr(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: const Color(0xFFF9F9F9),
+                          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5)),
                         ),
                         items: _categories.map((category) {
                           return DropdownMenuItem(
                             value: category,
-                            child: Text(category, style: const TextStyle(fontSize: 13, color: Color(0xFF1A1A1A))),
+                            child: Text(category, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
                           );
                         }).toList(),
                         onChanged: (value) => setState(() => _selectedCategory = value),
                         validator: (value) {
-                          if (value == null) return 'Please select a category';
+                          if (value == null) return 'Please select a category'.tr();
                           return null;
                         },
                       ),
@@ -300,7 +302,7 @@ class _DonateScreenState extends State<DonateScreen> {
                               : const Icon(Icons.library_add_rounded, size: 20),
                           label: _isLoading
                               ? const SizedBox()
-                              : const Text('Add to Library Collection', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                              : Text('Add to Library Collection'.tr(), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                         ),
                       ),
 
@@ -311,7 +313,7 @@ class _DonateScreenState extends State<DonateScreen> {
                         height: 48,
                         child: TextButton(
                           onPressed: _handleSaveAsDraft,
-                          child: const Text('Save as Draft', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFFCC3333))),
+                          child: Text('Save as Draft'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFFCC3333))),
                         ),
                       ),
 

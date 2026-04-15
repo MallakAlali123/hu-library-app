@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 
 class NewPassword extends StatefulWidget {
   const NewPassword({super.key});
@@ -24,45 +25,51 @@ class _NewPasswordState extends State<NewPassword> {
   void _handleResetPassword() {
     if (_passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
+        SnackBar(content: Text('Please fill in all fields'.tr())),
       );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
+        SnackBar(content: Text('Passwords do not match'.tr())),
       );
       return;
     }
 
+    // هنا يجب إضافة منطق إعادة تعيين كلمة المرور الحقيقية في Firebase
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Password reset successfully!'),
+      SnackBar(
+        content: Text('Password reset successfully!'.tr()),
         backgroundColor: Colors.green,
       ),
     );
-
-    context.go('/login');
+    
+    // إعادة توجيه لشاشة تسجيل الدخول
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context.go('/login');
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color themeRed = Color(0xFFC62828);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/forgot-password-verify'),
         ),
-        title: const Text(
-          'Security',
-          style: TextStyle(color: Color(0xFF0D1B3E), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Security'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -71,59 +78,53 @@ class _NewPasswordState extends State<NewPassword> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFEBEE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.history_rounded, size: 50, color: themeRed),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
+                  shape: BoxShape.circle,
                 ),
+                child: Icon(Icons.history_rounded, size: 50, color: const Color(0xFFCC3333)),
               ),
               const SizedBox(height: 32),
-              const Center(
-                child: Text(
-                  'Create new password',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF0D1B3E)),
-                ),
+              Text(
+                'Create new password'.tr(),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: 12),
-              const Center(
-                child: Text(
-                  'Your new password must be different from\npreviously used passwords. Use at least 8\ncharacters.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF757575), fontSize: 14, height: 1.5),
-                ),
+              Text(
+                'Your new password must be different from previously used passwords. Use at least 8 characters.'.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), height: 1.5),
               ),
               const SizedBox(height: 40),
-              _buildLabel('New Password'),
+              _buildLabel('New Password'.tr()),
               _buildPasswordField(_passwordController, _isPasswordVisible, () {
                 setState(() => _isPasswordVisible = !_isPasswordVisible);
-              }, 'Enter new password'),
+              }, 'Enter new password'.tr()),
               const SizedBox(height: 20),
-              _buildLabel('Confirm Password'),
+              _buildLabel('Confirm Password'.tr()),
               _buildPasswordField(_confirmPasswordController, _isConfirmVisible, () {
                 setState(() => _isConfirmVisible = !_isConfirmVisible);
-              }, 'Confirm your new password'),
+              }, 'Confirm your new password'.tr()),
               const SizedBox(height: 30),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEE).withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'PASSWORD REQUIREMENTS',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: themeRed),
+                    Text(
+                      'PASSWORD REQUIREMENTS'.tr(),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFFCC3333)),
                     ),
                     const SizedBox(height: 12),
-                    _buildRequirementRow('At least 8 characters long', true),
-                    _buildRequirementRow('One uppercase and one lowercase letter', false),
-                    _buildRequirementRow('At least one number or symbol', false),
+                    _buildRequirementRow('At least 8 characters long'.tr(), true),
+                    _buildRequirementRow('One uppercase and one lowercase letter'.tr(), false),
+                    _buildRequirementRow('At least one number or symbol'.tr(), false),
                   ],
                 ),
               ),
@@ -134,14 +135,11 @@ class _NewPasswordState extends State<NewPassword> {
                 child: ElevatedButton(
                   onPressed: _handleResetPassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: themeRed,
+                    backgroundColor: const Color(0xFFCC3333),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
+                    elevation: 2,
                   ),
-                  child: const Text(
-                    'Reset Password',
-                    style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                  child: Text('Reset Password'.tr(), style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -149,13 +147,13 @@ class _NewPasswordState extends State<NewPassword> {
                 child: TextButton(
                   onPressed: () {},
                   child: RichText(
-                    text: const TextSpan(
-                      text: 'Need help? ',
-                      style: TextStyle(color: Color(0xFF888888), fontSize: 13),
+                    text: TextSpan(
+                      text: 'Need help? '.tr(),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13),
                       children: [
                         TextSpan(
-                          text: 'Contact Support',
-                          style: TextStyle(color: themeRed, fontWeight: FontWeight.bold),
+                          text: 'Contact Support'.tr(),
+                          style: TextStyle(color: const Color(0xFFCC3333), fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -175,7 +173,7 @@ class _NewPasswordState extends State<NewPassword> {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0D1B3E)),
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
       ),
     );
   }
@@ -185,19 +183,19 @@ class _NewPasswordState extends State<NewPassword> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: TextField(
         controller: controller,
         obscureText: !isVisible,
-        style: const TextStyle(fontSize: 16),
+        style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           suffixIcon: IconButton(
-            icon: Icon(isVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: Colors.grey, size: 20),
+            icon: Icon(isVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
             onPressed: onToggle,
           ),
         ),
@@ -205,20 +203,20 @@ class _NewPasswordState extends State<NewPassword> {
     );
   }
 
-  Widget _buildRequirementRow(String text, bool isMet) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          Icon(
-            isMet ? Icons.check_circle_outline : Icons.circle_outlined,
-            size: 16,
-            color: isMet ? Colors.green : Colors.grey,
-          ),
-          const SizedBox(width: 8),
-          Text(text, style: TextStyle(fontSize: 12, color: isMet ? Colors.black87 : Colors.grey[600])),
-        ],
-      ),
-    );
+    Widget _buildRequirementRow(String text, bool isMet) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Row(
+          children: [
+            Icon(
+              isMet ? Icons.check_circle_outline : Icons.circle_outlined,
+              size: 16,
+              color: isMet ? Colors.green : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface))),
+          ],
+        ),
+      );
+    }
   }
-}

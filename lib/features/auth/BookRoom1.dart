@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 import '../../services/request_service.dart';
 
 class BookRoom1Screen extends StatefulWidget {
@@ -10,9 +11,9 @@ class BookRoom1Screen extends StatefulWidget {
 }
 
 class _BookRoom1ScreenState extends State<BookRoom1Screen> {
-  // تعديل 1: جعل الشهر يبدأ من الشهر الحالي بدلاً من نوفمبر 2024 الثابت
+  // تعديل 1: جعل الشهر يبدأ من الشهر الحالي
   DateTime _currentMonth = DateTime.now(); 
-  int? _selectedDay; // تم إزالة القيمة الافتراضية القديمة
+  int? _selectedDay;
   String? _selectedTime;
   bool _isLoading = false;
   final RequestService _requestService = RequestService();
@@ -32,7 +33,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
   @override
   void initState() {
     super.initState();
-    // تعديل 2: اختيار يوم اليوم الحالي تلقائياً عند فتح الشاشة
+    // تعديل 2: اختيار يوم اليوم الحالي تلقائياً
     _selectedDay = DateTime.now().day;
   }
 
@@ -68,7 +69,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
   void _handleReserve() async {
     if (_selectedDay == null || _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a date and time')),
+        SnackBar(content: Text('Please select a date and time'.tr())),
       );
       return;
     }
@@ -86,8 +87,8 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
     if (result['success']) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Reservation submitted successfully!'),
+        SnackBar(
+          content: Text('✅ Reservation submitted successfully!'.tr()),
           backgroundColor: Colors.green,
         ),
       );
@@ -107,18 +108,20 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     final days = _getDaysInMonth();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // ✅ تعديل لون الخلفية ليدعم Dark Mode
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        // ✅ تعديل لون الخلفية ليدعم Dark Mode
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: GestureDetector(
           onTap: () => context.go('/hall'),
-          child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A1A1A)),
+          child: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
         ),
-        title: const Text(
-          'Reserve Hall',
+        title: Text(
+          'Reserve Hall'.tr(),
           style: TextStyle(
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -126,7 +129,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline_rounded, color: Color(0xFF1A1A1A)),
+            icon: Icon(Icons.info_outline_rounded, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {},
           ),
         ],
@@ -141,7 +144,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
               borderRadius: BorderRadius.circular(14),
               child: Stack(
                 children: [
-                  // تعديل 3: تغيير الصورة لصورة موجودة لتجنب خطأ 404
+                  // تعديل 3: تغيير الصورة لصورة موجودة
                   Image.asset(
                     'assets/images/hall.png',
                     width: double.infinity,
@@ -151,7 +154,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                       width: double.infinity,
                       height: 160,
                       color: const Color(0xFF8B2222),
-                      child: const Icon(Icons.meeting_room, color: Colors.white70, size: 50),
+                      child: const Icon(Icons.meeting_room, color: Colors.white70, size: 50), // ✅ تصحيح اسم الأيقونة
                     ),
                   ),
                   Positioned(
@@ -182,9 +185,9 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Select Date',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+            Text(
+              'Select Date'.tr(),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
             ),
 
             const SizedBox(height: 12),
@@ -192,9 +195,9 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ دينامي
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFEEEEEE)),
+                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant), // ✅ دينامي
               ),
               child: Column(
                 children: [
@@ -203,15 +206,15 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                     children: [
                       GestureDetector(
                         onTap: _previousMonth,
-                        child: const Icon(Icons.chevron_left_rounded, color: Color(0xFF888888)),
+                        child: Icon(Icons.chevron_left_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                       ),
                       Text(
                         '${_monthName(_currentMonth.month)} ${_currentMonth.year}',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                       ),
                       GestureDetector(
                         onTap: _nextMonth,
-                        child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF888888)),
+                        child: Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                       ),
                     ],
                   ),
@@ -226,7 +229,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                         child: Text(
                           d,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF888888), fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w600),
                         ),
                       );
                     }).toList(),
@@ -260,7 +263,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
+                                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -274,9 +277,9 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Available Time Slots',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+            Text(
+              'Available Time Slots'.tr(),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
             ),
 
             const SizedBox(height: 12),

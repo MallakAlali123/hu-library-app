@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 
 class ForgotPasswordNumber extends StatefulWidget {
   const ForgotPasswordNumber({super.key});
@@ -21,12 +22,13 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
   void _handleSendCode() async {
     if (_phoneController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your phone number')),
+        SnackBar(content: Text('Please enter your phone number'.tr())),
       );
       return;
     }
 
     setState(() => _isLoading = true);
+    // محاكاة إرسال الكود
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -35,89 +37,88 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
 
   @override
   Widget build(BuildContext context) {
-    const Color themeRed = Color(0xFFC62828);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/forgot-password'),
         ),
-        title: const Text(
-          'Forgot Password',
-          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Forgot Password'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
               Container(
-                width: 50,
-                height: 50,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEE),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.lock_reset, color: themeRed, size: 30),
+                child: Icon(Icons.lock_reset_rounded, color: const Color(0xFFCC3333), size: 30),
               ),
               const SizedBox(height: 30),
-              const Text(
-                'Reset\nPassword',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0D1B3E), height: 1.2),
+              Text(
+                'Reset\nPassword'.tr(),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface, height: 1.2),
               ),
               const SizedBox(height: 12),
-              const Text(
-                "Enter the phone number associated with your account, and we'll send you a 6-digit verification code to reset your password.",
-                style: TextStyle(color: Color(0xFF757575), fontSize: 13, height: 1.5),
+              Text(
+                'Enter phone number associated with your account, and we\'ll send you a 6-digit verification code to reset your password.'.tr(),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), height: 1.5),
               ),
               const SizedBox(height: 35),
-              const Text(
-                'PHONE NUMBER',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF888888)),
+              Text(
+                'PHONE NUMBER'.tr(),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), letterSpacing: 1.2),
               ),
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface, // ✅ دينامي
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                  border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                 ),
                 child: TextField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: 'Your mobile number',
-                    prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFFCC3333)),
+                  decoration: InputDecoration(
+                    hintText: 'Your mobile number'.tr(),
+                    prefixIcon: Icon(Icons.phone_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                   ),
                 ),
               ),
               const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
-                height: 55,
+                height: 54,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleSendCode,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: themeRed,
+                    backgroundColor: const Color(0xFFCC3333),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isLoading
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Row(
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Send Reset Code', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 10),
-                            Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                            Text('Send Reset Code'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 10),
+                            const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
                           ],
                         ),
                 ),
@@ -125,14 +126,17 @@ class _ForgotPasswordNumberState extends State<ForgotPasswordNumber> {
               const SizedBox(height: 50),
               Center(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Remember your password? ', style: TextStyle(color: Color(0xFF888888), fontSize: 13)),
-                    GestureDetector(
-                      onTap: () => context.go('/login'),
-                      child: const Text('Log in', style: TextStyle(color: themeRed, fontWeight: FontWeight.bold, fontSize: 13)),
-                    ),
-                  ],
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Remember your password? '.tr(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13)),
+                      GestureDetector(
+                        onTap: () => context.go('/login'),
+                        child: Text(
+                          'Log in'.tr(),
+                          style: const TextStyle(color: Color(0xFFCC3333), fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ],
                 ),
               ),
             ],

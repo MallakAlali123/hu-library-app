@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 
 class ForgotPasswordEmail extends StatefulWidget {
   const ForgotPasswordEmail({super.key});
@@ -22,6 +23,7 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
   void _handleSendCode() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+      // محاكاة إرسال الكود
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -36,17 +38,18 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A1A1A)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/login'),
         ),
-        title: const Text(
-          'Forgot Password',
-          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Forgot Password'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
@@ -60,31 +63,31 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEEEE),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.lock_reset_rounded, color: Color(0xFFCC3333), size: 28),
+                child: Icon(Icons.lock_reset_rounded, color: const Color(0xFFCC3333), size: 28),
               ),
 
               const SizedBox(height: 20),
 
-              const Text(
-                'Reset\nPassword',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A), height: 1.2),
+              Text(
+                'Reset\nPassword'.tr(),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface, height: 1.2),
               ),
 
               const SizedBox(height: 12),
 
-              const Text(
-                'Enter the university email address associated with your account. We will send you a 6-digit verification code to reset your password.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.6),
+              Text(
+                'Enter the university email address associated with your account. We will send you a 6-digit verification code to reset your password.'.tr(),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), height: 1.5),
               ),
 
               const SizedBox(height: 28),
 
-              const Text(
-                'EMAIL',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF888888), letterSpacing: 1.2),
+              Text(
+                'EMAIL'.tr(),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), letterSpacing: 1.2),
               ),
 
               const SizedBox(height: 8),
@@ -94,12 +97,12 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'ID@std.hu.edu.jo',
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFAAAAAA)),
+                  prefixIcon: Icon(Icons.email_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).colorScheme.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -107,8 +110,8 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                   ),
                 ),
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Please enter your email';
-                  if (!value.contains('@')) return 'Please enter a valid email';
+                  if (value == null || value.trim().isEmpty) return 'Please enter your email'.tr();
+                  if (!value.contains('@')) return 'Please enter a valid email'.tr();
                   return null;
                 },
               ),
@@ -127,12 +130,12 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                   ),
                   child: _isLoading
                       ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Row(
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Send Reset Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward_rounded, size: 20),
+                            Text('Send Reset Code'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 20),
                           ],
                         ),
                 ),
@@ -152,12 +155,12 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Find by mobile number', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward_rounded, size: 20),
+                      Text('Find by mobile number'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 20),
                     ],
                   ),
                 ),
@@ -169,12 +172,12 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Remember your password? ', style: TextStyle(color: Color(0xFF888888), fontSize: 13)),
+                    Text('Remember your password? '.tr(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13)),
                     GestureDetector(
                       onTap: () => context.go('/login'),
-                      child: const Text(
-                        'Log in',
-                        style: TextStyle(color: Color(0xFFCC3333), fontWeight: FontWeight.bold, fontSize: 13),
+                      child: Text(
+                        'Log in'.tr(),
+                        style: const TextStyle(color: Color(0xFFCC3333), fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
                   ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
 
 class LibraryServicesPage extends StatefulWidget {
   const LibraryServicesPage({super.key});
@@ -18,24 +19,24 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
     super.dispose();
   }
 
-  final List<_ServiceItem> _services = const [
+  final List<_ServiceItem> _services = [
     _ServiceItem(
-      title: 'Book Suggestion',
+      title: 'Book Suggestion'.tr(),
       icon: Icons.lightbulb_outline_rounded,
       imageAsset: 'assets/images/book_suggestion.png',
     ),
     _ServiceItem(
-      title: 'Donate a book',
-      icon: Icons.card_giftcard_rounded,
+      title: 'Donate a book'.tr(),
+      icon: Icons.card_giftcard_outlined,
       imageAsset: 'assets/images/donate_book.png',
     ),
     _ServiceItem(
-      title: 'Reserved Requests',
+      title: 'Reserved Requests'.tr(),
       icon: Icons.bookmark_border_rounded,
       imageAsset: 'assets/images/reserved.png',
     ),
     _ServiceItem(
-      title: 'Hall Reservation',
+      title: 'Hall Reservation'.tr(),
       icon: Icons.meeting_room_outlined,
       imageAsset: 'assets/images/hall.png',
     ),
@@ -44,18 +45,19 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      // ✅ استخدام لون من الثيم
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
-        title: const Text(
-          'Library Services',
-          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'Library Services'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF1A1A1A)),
+            icon: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {},
           ),
         ],
@@ -65,22 +67,23 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // شريط البحث
             GestureDetector(
               onTap: () => context.go('/search'),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                  border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                 ),
-                child: const TextField(
+                child: TextField(
                   enabled: false,
                   decoration: InputDecoration(
-                    hintText: 'Search title, author, or ISBN...',
-                    hintStyle: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
-                    prefixIcon: Icon(Icons.search_rounded, color: Color(0xFFAAAAAA)),
+                    hintText: 'Search title, author, or ISBN...'.tr(),
+                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                    prefixIcon: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
               ),
@@ -88,18 +91,19 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
 
             const SizedBox(height: 24),
 
+            // رأس قسم الخدمات
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Services & Requests',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                Text(
+                  'Services & Requests'.tr(),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                 ),
                 GestureDetector(
                   onTap: () {},
-                  child: const Text(
-                    'View All',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFCC3333)),
+                  child: Text(
+                    'View All'.tr(),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFFCC3333)),
                   ),
                 ),
               ],
@@ -122,13 +126,14 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 return _ServiceCard(
                   service: service,
                   onTap: () {
-                    if (service.title == 'Donate a book') {
+                    if (service.title.contains('Donate')) {
                       context.go('/donate');
-                    } else if (service.title == 'Hall Reservation') {
+                    } else if (service.title.contains('Hall')) {
                       context.go('/hall');
-                    } else if (service.title == 'Book Suggestion') {
+                    } else if (service.title.contains('Book Suggestion')) {
                       context.go('/book-suggestion');
-                    } else if (service.title == 'Reserved Requests') {
+                    } else {
+                      // Reserved Requests
                       context.go('/my-requests');
                     }
                   },
@@ -138,10 +143,11 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
 
             const SizedBox(height: 20),
 
+            // قسم المساعدة
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF0F0),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -156,19 +162,21 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                     child: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 24),
                   ),
                   const SizedBox(width: 14),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Need help?',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'Chat with our librarian available 24/7',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Need help?'.tr(),
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Chat with our librarian available 24/7'.tr(),
+                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -189,17 +197,17 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
           if (index == 3) context.go('/profile');
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         selectedItemColor: const Color(0xFFCC3333),
-        unselectedItemColor: const Color(0xFFAAAAAA),
+        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         elevation: 8,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'SEARCH'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'PROFILE'),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'REQUESTS'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'MY BOOKS'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'PROFILE'.tr()),
         ],
       ),
     );
@@ -224,7 +232,10 @@ class _ServiceCard extends StatelessWidget {
             Image.asset(
               service.imageAsset,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF8B2222)),
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: const Color(0xFF8B2222),
+                child: Icon(service.icon, size: 50, color: Colors.white),
+              ),
             ),
             Container(
               decoration: const BoxDecoration(

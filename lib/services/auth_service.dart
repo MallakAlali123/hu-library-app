@@ -1,44 +1,35 @@
+import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ دعم اللغة
+import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import '../../services/auth_service.dart';
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // الحصول على المستخدم الحالي
   User? get currentUser => _auth.currentUser;
 
-  // تسجيل مستخدم جديد
-  Future<Map<String, dynamic>> register({
-    required String name,
-    required String email,
-    required String password,
-    required String role, // student, librarian, admin
-  }) async {
+  Future<String> getUserRole() async {
+    final user = _auth.currentUser;
+    if (user == null) return 'student';
+
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final doc = await _firestore.collection('users').doc(user.uid).get();
 
-      // حفظ بيانات المستخدم في Firestore
-      await _firestore.collection('users').doc(result.user!.uid).set({
-        'uid': result.user!.uid,
-        'name': name,
-        'email': email,
-        'role': role,
-        'createdAt': DateTime.now().toIso8601String(),
-      });
-
-      notifyListeners();
-      return {'success': true, 'message': 'تم التسجيل بنجاح'};
+      if (doc.exists) {
+        return doc.data()?['role'] ?? 'student';
+      } else {
+        return 'student';
+      }
     } catch (e) {
-      return {'success': false, 'message': e.toString()};
+      print("Error getting user role: $e");
+      return 'student';
     }
   }
 
-  // تسجيل الدخول
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -48,46 +39,50 @@ class AuthService extends ChangeNotifier {
         email: email,
         password: password,
       );
+
       notifyListeners();
-      return {'success': true, 'message': 'تم تسجيل الدخول بنجاح'};
+
+      return {'success': true, 'message': 'Login successful'};
     } catch (e) {
-      return {'success': false, 'message': e.toString()};
+      return {'success': false, 'message': 'Incorrect email or password'};
     }
   }
 
-  // تسجيل الخروج
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String studentId,
+    required String email,
+    required String password,
+    required String role,
+  }) async {
+   final userCredential = await _auth.createUserWithEmailAndPassword(
+  email: email,
+  password: password,
+);
+    await userCredential.user!.updateDisplayName(name);
+
+    await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      'name': name,
+      'studentId': studentId,
+      'email': email,
+      'role': role,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    notifyListeners();
+
+    return {'success': true, 'message': 'Account created successfully'};
+  }
+
   Future<void> logout() async {
     await _auth.signOut();
     notifyListeners();
   }
-
-  // الحصول على دور المستخدم
-  Future<String?> getUserRole() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) return null;
-
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(user.uid).get();
-
-      return doc['role'] as String?;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // الحصول على بيانات المستخدم كاملة
   Future<Map<String, dynamic>?> getUserData() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) return null;
+  final user = _auth.currentUser;
+  if (user == null) return null;
 
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(user.uid).get();
-
-      return doc.data() as Map<String, dynamic>?;
-    } catch (e) {
-      return null;
-    }
-  }
+  final doc = await _firestore.collection('users').doc(user.uid).get();
+  return doc.data();
+}
 }

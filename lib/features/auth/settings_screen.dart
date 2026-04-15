@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -20,7 +21,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
   
-  // متغير للوضع الليلي
   bool _isDarkMode = false;
 
   @override
@@ -30,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadThemePreference();
   }
 
-  // ✅ تعديل دالة تحميل الاسم (تعالج مشكلة Null Value)
+  // دالة تحميل الاسم
   void _loadCurrentName() async {
     final user = _auth.currentUser;
     if (user != null) {
@@ -44,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _nameController.text = doc.data()?['name'] ?? '';
           });
         } else {
-          // ✅ إذا لم توجد بيانات، قم بإنشائها الآن (حل المشكلة)
+          // إذا لم توجد بيانات، قم بإنشائها الآن
           await docRef.set({
             'name': 'Student', // اسم افتراضي
             'email': user.email,
@@ -85,10 +85,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Name updated successfully'), backgroundColor: Colors.green),
           );
-          // ✅ تحديث الاسم فوراً في الذاكرة ليراه المستخدم
-          setState(() {
-             // (اختياري) يمكنك إضافة منطق لتحديث الاسم في البروفايل هنا
-          });
           Navigator.pop(context); // العودة للبروفايل
         }
       }
@@ -110,9 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', value);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Dark Mode ${value ? "Enabled" : "Disabled"} (Requires App Restart)')),
-    );
+    // ملاحظة: هذا سيطلب إعادة تشغيل التطبيق لتطبيق الثيم إذا استخدمت ThemeProvider، لكن للا توقف التطبيق، سنقوم فقط بحفظ القيمة.
   }
 
   // مسح البيانات
@@ -135,17 +129,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      // ✅ استخدام لون الخلفية من الثيم (يتغير بين الأبيض والأسود)
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        // ✅ استخدام لون الخلفية من الثيم
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A1A1A)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/profile'),
         ),
-        title: const Text(
-          'Settings',
-          style: TextStyle(color: Color(0xFF1A1A1A), fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          'settings'.tr(),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
       ),
@@ -153,30 +150,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // 1. قسم الحساب
-          const Text(
-            'Account',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF888888)),
+          Text(
+            'account'.tr(),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           ),
           const SizedBox(height: 10),
 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون الحاوية يعتمد على الثيم
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Display Name',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                Text(
+                  'display_name'.tr(),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    hintText: 'Enter your name',
+                    hintText: 'Enter your name'.tr(),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   ),
@@ -193,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: _isLoading
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text('Save Changes', style: TextStyle(color: Colors.white)),
+                        : Text('save_changes'.tr(), style: const TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -203,16 +200,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // 2. قسم المظهر (Appearance)
-          const Text(
-            'Appearance',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF888888)),
+          Text(
+            'appearance'.tr(),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           ),
           const SizedBox(height: 10),
 
           _SettingsSwitchTile(
             icon: Icons.dark_mode_outlined,
-            title: 'Dark Mode',
-            subtitle: 'Enable dark theme',
+            title: 'dark_mode'.tr(),
+            subtitle: 'enable_dark_theme'.tr(),
             value: _isDarkMode,
             onChanged: _toggleTheme,
           ),
@@ -220,30 +217,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // 3. قسم عام (General)
-          const Text(
-            'General',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF888888)),
+          Text(
+            'general'.tr(),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           ),
           const SizedBox(height: 10),
 
           _SettingsTile(
             icon: Icons.cleaning_services_outlined,
-            title: 'Clear Cache',
+            title: 'clear_cache'.tr(),
             onTap: _clearCache,
           ),
+          
           _SettingsTile(
             icon: Icons.language_outlined,
-            title: 'Language',
-            trailing: 'English',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Language selection coming soon')),
-              );
+            title: 'language'.tr(),
+            trailing: context.locale.languageCode == 'ar' ? 'العربية' : 'English',
+            onTap: () async {
+              // تبديل اللغة مع إعادة تحميل الصفحة لتفعيل التغيير
+              final newLocale = context.locale.languageCode == 'en' ? const Locale('ar') : const Locale('en');
+              await context.setLocale(newLocale);
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Language changed to ${newLocale.languageCode == 'ar' ? 'Arabic' : 'English'}'), backgroundColor: Colors.green),
+                );
+              }
             },
           ),
           _SettingsTile(
             icon: Icons.star_border_outlined,
-            title: 'Rate Us',
+            title: 'rate_us'.tr(),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Opening Store...')),
@@ -277,11 +281,14 @@ class _SettingsSwitchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF1A1A1A)),
-        title: Text(title, style: const TextStyle(fontSize: 15, color: Color(0xFF1A1A1A))),
-        subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(fontSize: 12, color: Color(0xFF888888))) : null,
+        leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+        title: Text(title, style: TextStyle(fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
+        subtitle: subtitle != null ? Text(subtitle!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))) : null,
         trailing: Switch(
           value: value,
           onChanged: onChanged,
@@ -295,7 +302,7 @@ class _SettingsSwitchTile extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String? trailing;
+  final String? trailing; // تصحيح اسم المتغير
   final VoidCallback onTap;
 
   const _SettingsTile({
@@ -308,18 +315,23 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest, // استخدام لون من الثيم
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: const Color(0xFF1A1A1A)),
-        title: Text(title, style: const TextStyle(fontSize: 15, color: Color(0xFF1A1A1A))),
+        leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+        title: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+        // ✅ استخدام themeColor للنصوص
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (trailing != null) Text(trailing!, style: const TextStyle(color: Color(0xFF888888))),
+            if (trailing != null)
+              Text(trailing!, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFCCCCCC)),
+            Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
           ],
         ),
       ),
