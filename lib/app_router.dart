@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'features/auth/splash_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/signup_screen.dart';
 import 'features/auth/VE_Signup.dart';
+// استيراد شغلك (تأكد من صحة المسار)
+import 'features/auth/admin/main_wrapper.dart'; 
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation:'/admin',
   routes: [
     GoRoute(
       path: '/',
@@ -28,6 +29,13 @@ final GoRouter appRouter = GoRouter(
         return VerifyEmailScreen(email: email);
       },
     ),
+    // --- هنا الربط مع شغلك يا محمود ---
+    GoRoute(
+      path: '/admin',
+      builder: (context, state) => const MainWrapper(), // استبدلنا "قريباً" بشغلك الفعلي
+    ),
+    // ---------------------------------
+    
     GoRoute(
       path: '/student',
       builder: (context, state) => const Scaffold(
@@ -38,12 +46,6 @@ final GoRouter appRouter = GoRouter(
       path: '/librarian',
       builder: (context, state) => const Scaffold(
         body: Center(child: Text('شاشة الأمين - قريباً')),
-      ),
-    ),
-    GoRoute(
-      path: '/admin',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('شاشة الأدمن - قريباً')),
       ),
     ),
   ],
