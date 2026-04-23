@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../data/models/book_model.dart';
+import 'package:hu_library_app/data/models/book.dart';
+
 import '../data/repositories/book_repository.dart';
 
 class BookService {
@@ -15,8 +15,9 @@ class BookService {
     required int totalCopies,
   }) async {
     try {
+      // التأكد من تمرير bookId (نمرره فارغاً لأن Repository سيولده)
       BookModel book = BookModel(
-        bookId: '',
+        bookId: '', // سيتم تعيينه من قبل Repository أو Firebase
         title: title,
         author: author,
         isbn: isbn,

@@ -20,6 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _startLoading() async {
+    // محاكاة شريط التحميل
     for (int i = 0; i <= 100; i += 5) {
       await Future.delayed(const Duration(milliseconds: 80));
       if (!mounted) return;
@@ -37,13 +38,17 @@ class _SplashScreenState extends State<SplashScreen> {
       });
     }
 
+    // التحقق من حالة تسجيل الدخول بعد انتهاء التحميل
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
     final user = FirebaseAuth.instance.currentUser;
+    
     if (user != null) {
+      // إذا كان المستخدم مسجل الدخول، انتقل للطالب (أو الرئيسية)
       context.go('/student');
     } else {
+      // إذا لم يكن مسجل، انتقل لصفحة الدخول
       context.go('/login');
     }
   }
@@ -66,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFCC3333).withOpacity(0.5),
+                      color: const Color(0xFFCC3333).withValues(alpha: 0.5),
                       blurRadius: 30,
                       spreadRadius: 5,
                     ),

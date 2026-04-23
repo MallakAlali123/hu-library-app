@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
+import 'package:easy_localization/easy_localization.dart'; // استيراد الترجمة
 import '../../services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -41,16 +41,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface, // ✅ Dark Mode
+      backgroundColor: Theme.of(context).colorScheme.surface, // ✅ دينامي
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface, // ✅ دينامي
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.go('/student'),
         ),
         title: Text(
-          'Student Profile'.tr(),
+          'profile'.tr(), // ✅ ترجمة
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
@@ -108,16 +108,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   Text(
                     _name,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
-                  ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                   const SizedBox(height: 4),
                   Text(
                     _email,
-                    style: const TextStyle(fontSize: 13, color: Color(0xFFCC3333), fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 13, color: const Color(0xFFCC3333), fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Hashemite University'.tr(),
+                    'Hashemite University',
                     style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                   ),
 
@@ -139,19 +138,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 28),
 
-                  _SectionHeader(title: 'LIBRARY & ACTIVITY'.tr()),
+                  _SectionHeader(title: 'LIBRARY & ACTIVITY'),
 
                   _MenuItem(
                     icon: Icons.menu_book_outlined,
-                    iconColor: const Color(0xFFCC3333),
                     title: 'My Borrowed Books'.tr(),
                     subtitle: '3 books currently due'.tr(),
-                    onTap: () => context.go('/my-books'),
+                    onTap: () => context.go('/my-books'), 
                   ),
                   
                   _MenuItem(
                     icon: Icons.bookmark_border_rounded,
-                    iconColor: const Color(0xFFCC3333),
                     title: 'Saved'.tr(),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -162,19 +159,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 8),
 
-                  _SectionHeader(title: 'PREFERENCES'.tr()),
+                  _SectionHeader(title: 'PREFERENCES'),
 
                   _MenuItem(
                     icon: Icons.notifications_none_rounded,
-                    iconColor: const Color(0xFFCC3333),
                     title: 'Notifications'.tr(),
-                    badge: '2',
+                    badge: '2', 
                     onTap: () => context.go('/notifications'),
                   ),
                   
                   _MenuItem(
                     icon: Icons.settings_outlined,
-                    iconColor: const Color(0xFFCC3333),
                     title: 'Settings'.tr(),
                     onTap: () => context.go('/settings'),
                   ),
@@ -189,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: ElevatedButton.icon(
                         onPressed: _handleLogout,
                         icon: const Icon(Icons.logout_rounded, size: 20),
-                        label: Text('Logout'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        label: Text('logout'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xFFCC3333),
@@ -222,10 +217,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         elevation: 8,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'.tr()),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'LIBRARY'.tr()),
-          BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'SEARCH'.tr()),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'PROFILE'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'home'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book_rounded), label: 'Library'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'Search'.tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'profile'.tr()),
         ],
       ),
     );
@@ -272,15 +267,13 @@ class _SectionHeader extends StatelessWidget {
 
 class _MenuItem extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
   final String title;
   final String? subtitle;
-  final String? badge; // ✅ تصحيح الاسم
+  final String? badge;
   final VoidCallback onTap;
 
   const _MenuItem({
     required this.icon,
-    required this.iconColor,
     required this.title,
     this.subtitle,
     this.badge,
@@ -294,18 +287,13 @@ class _MenuItem extends StatelessWidget {
       decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         onTap: onTap,
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(color: const Color(0xFFFFEEEE), borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
+        leading: Icon(icon, color: const Color(0xFFCC3333)),
         title: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
         subtitle: subtitle != null ? Text(subtitle!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))) : null,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (badge != null) // ✅ تصحيح الشرط
+            if (badge != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(color: const Color(0xFFCC3333), borderRadius: BorderRadius.circular(12)),

@@ -2,22 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
+
 import 'firebase_options.dart';
 import 'app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   await EasyLocalization.ensureInitialized();
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('ar')],
-      path: 'assets/translations', 
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ar'),
+      ],
+      path: 'assets/translations',
       fallbackLocale: const Locale('en'),
       child: const MyApp(),
     ),
@@ -41,14 +45,16 @@ class MyApp extends StatelessWidget {
         final themeMode = snapshot.data ?? ThemeMode.light;
 
         return MaterialApp.router(
-          // إعدادات الترجمة
+          debugShowCheckedModeBanner: false,
+
+          title: 'HU Library',
+
+          // 🌍 Localization
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
 
-          title: 'HU Library',
-          debugShowCheckedModeBanner: false,
-          
+          // 🎨 Themes
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
@@ -56,19 +62,17 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.light,
             ),
           ),
-          
+
           darkTheme: ThemeData(
             useMaterial3: true,
-            // هذا الثيم سيجعل كل الخلفيات سوداء تلقائياً
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFFCC3333),
               brightness: Brightness.dark,
             ),
           ),
-          
-          // هذا السطر هو الذي يفعل الوضع الليلي
+
           themeMode: themeMode,
-          
+
           routerConfig: appRouter,
         );
       },

@@ -1,43 +1,41 @@
 name: hu_library_app
-description: "A new Flutter project."
+description: "Hashemite University Library App"
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ">=3.9.2 <4.0.0"
 
 dependencies:
   flutter:
-    sdk: flutter 
-
+    sdk: flutter
   cupertino_icons: ^1.0.8
 
-  # Firebase
+  # --- Firebase ---
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.1
 
-  # State Management
+  # --- State Management ---
   provider: ^6.1.1
 
-  # Navigation
+  # --- Navigation ---
   go_router: ^12.1.1
 
-  # UI
-  flutter_svg: ^2.0.9
-
-  # Utils
-  shared_preferences: ^2.2.2
-  intl: ^0.20.2
-  
- 
+  # --- Localization ---
   easy_localization: ^3.0.0
+  intl: any
+
+  # --- UI ---
+  flutter_svg: ^2.0.10
+
+  # --- Utils ---
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
-  flutter_test:
+  flutter:
     sdk: flutter
-
   flutter_lints: ^5.0.0
 
 flutter:
@@ -49,9 +47,7 @@ flutter:
     - assets/images/donate_book.png
     - assets/images/hall.png
     - assets/images/reserved.png
-    # كل صورة في سطر جديد
     - assets/images/room1.jpg
     - assets/images/room2.jpg
     - assets/images/room3.jpg
-  
     - assets/translations/

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/request_model.dart';
+import '../models/request.dart';
 
 class RequestRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -18,11 +18,15 @@ class RequestRepository {
       QuerySnapshot result = await _firestore
           .collection('requests')
           .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
           .get();
-      return result.docs
-          .map((doc) =>
-          RequestModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .toList();
+      
+      return result.docs.map((doc) {
+        return RequestModel.fromMap(
+          doc.data() as Map<String, dynamic>, 
+          doc.id
+        );
+      }).toList();
     } catch (e) {
       return [];
     }
@@ -34,10 +38,13 @@ class RequestRepository {
           .collection('requests')
           .orderBy('createdAt', descending: true)
           .get();
-      return result.docs
-          .map((doc) =>
-          RequestModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .toList();
+      
+      return result.docs.map((doc) {
+        return RequestModel.fromMap(
+          doc.data() as Map<String, dynamic>, 
+          doc.id
+        );
+      }).toList();
     } catch (e) {
       return [];
     }

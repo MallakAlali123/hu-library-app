@@ -1,88 +1,69 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/book_model.dart';
+import 'package:hu_library_app/data/models/book.dart';
 
 class BookRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // محاكاة قاعدة بيانات
+  final List<BookModel> _books = [];
 
-  Future<List<BookModel>> getAllBooks() async {
-    try {
-      QuerySnapshot result = await _firestore.collection('books').get();
-      return result.docs
-          .map((doc) =>
-          BookModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<BookModel?> getBook(String bookId) async {
-    try {
-      DocumentSnapshot doc =
-      await _firestore.collection('books').doc(bookId).get();
-      if (!doc.exists) return null;
-      return BookModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-    } catch (e) {
-      return null;
-    }
-  }
-
+  // إضافة كتاب
   Future<bool> addBook(BookModel book) async {
     try {
-      await _firestore.collection('books').add(book.toMap());
+      _books.add(book);
       return true;
     } catch (e) {
       return false;
     }
   }
 
+  // البحث عن كتاب
+  Future<List<BookModel>> searchBooks(String query) async {
+    return _books.where((book) =>
+      book.title.toLowerCase().contains(query.toLowerCase()) ||
+      book.author.toLowerCase().contains(query.toLowerCase())
+    ).toList();
+  }
+
+  // جلب كل الكتب
+  Future<List<BookModel>> getAllBooks() async {
+    return _books;
+  }
+
+  // جلب الكتب الجديدة
+  Future<List<BookModel>> getNewBooks() async {
+    if (_books.length <= 5) return _books;
+    return _books.sublist(_books.length - 5);
+  }
+
+  // تعديل كتاب (تم تعديل الطريقة لإنشاء كائن جديد بدلاً من تعديل الحقول final)
   Future<bool> updateBook(String bookId, Map<String, dynamic> data) async {
     try {
-      await _firestore.collection('books').doc(bookId).update(data);
-      return true;
+      int index = _books.indexWhere((book) => book.bookId == bookId);
+      if (index != -1) {
+        // لا يمكن تعديل الحقول final مباشرة، لذا ننشئ BookModel جديد
+        _books[index] = BookModel(
+          bookId: _books[index].bookId,
+          title: data['title'] ?? _books[index].title,
+          author: data['author'] ?? _books[index].author,
+          isbn: data['isbn'] ?? _books[index].isbn,
+          category: data['category'] ?? _books[index].category,
+          location: data['location'] ?? _books[index].location,
+          totalCopies: data['totalCopies'] ?? _books[index].totalCopies,
+          availableCopies: data['availableCopies'] ?? _books[index].availableCopies,
+        );
+        return true;
+      }
+      return false;
     } catch (e) {
       return false;
     }
   }
 
+  // حذف كتاب
   Future<bool> deleteBook(String bookId) async {
     try {
-      await _firestore.collection('books').doc(bookId).delete();
+      _books.removeWhere((book) => book.bookId == bookId);
       return true;
     } catch (e) {
       return false;
-    }
-  }
-
-  Future<List<BookModel>> searchBooks(String query) async {
-    try {
-      QuerySnapshot result = await _firestore
-          .collection('books')
-          .where('title', isGreaterThanOrEqualTo: query)
-          .where('title', isLessThanOrEqualTo: '$query\uf8ff')
-          .get();
-      return result.docs
-          .map((doc) =>
-          BookModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<BookModel>> getNewBooks() async {
-    try {
-      QuerySnapshot result = await _firestore
-          .collection('books')
-          .orderBy('createdAt', descending: true)
-          .limit(10)
-          .get();
-      return result.docs
-          .map((doc) =>
-          BookModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .toList();
-    } catch (e) {
-      return [];
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../data/models/request_model.dart';
+import '../data/models/request.dart';
 import '../data/repositories/request_repository.dart';
 
 class RequestService {
@@ -24,13 +24,12 @@ class RequestService {
           .get();
       String userName = doc['name'] ?? '';
 
+      // ✅ تم التصحيح: استخدام RequestModel بدلاً من Request
       RequestModel request = RequestModel(
         requestId: '',
         userId: user.uid,
         userName: userName,
-        requestType: requestType,
-        title: title,
-        description: description,
+        bookTitle: title, // ملاحظة: في الـ Model الحقل bookTitle، هنا نمرر title
         status: 'pending',
         createdAt: DateTime.now().toIso8601String(),
       );

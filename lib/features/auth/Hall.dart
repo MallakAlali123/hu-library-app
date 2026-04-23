@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart'; // لاستخدام debugPrint
 
 class HallScreen extends StatefulWidget {
   const HallScreen({super.key});
@@ -17,19 +18,6 @@ class _HallScreenState extends State<HallScreen> {
     'assets/images/room2.jpg',
     'assets/images/room3.jpg',
   ];
-
-  // ✅ دالة مساعدة لحساب الحالة خارج const
-  String _getStatus(String? status) {
-    if (status == 'available') {
-      return 'AVAILABLE';
-    }
-    return 'RESERVED';
-  }
-
-  // ✅ دالة مساعدة للسعة خارج const
-  String _getCapacity(dynamic capacity) {
-    return capacity?.toString() ?? '0';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,21 +71,24 @@ class _HallScreenState extends State<HallScreen> {
               stream: FirebaseFirestore.instance.collection('halls').snapshots(),
               builder: (context, snapshot) {
                 
-                print("Connection State: ${snapshot.connectionState}");
+                // 1. طباعة حالة الاتصال للتصحيح (استخدام debugPrint)
+                debugPrint("Connection State: ${snapshot.connectionState}");
 
+                // Loading
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: CircularProgressIndicator(color: Color(0xFFCC3333)),
                   );
                 }
 
+                // Error
                 if (snapshot.hasError) {
-                  print("Firebase Error: ${snapshot.error}");
+                  debugPrint("Firebase Error: ${snapshot.error}");
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red, size: 40),
+                        const Icon(Icons.error_outline, color: Colors.red, size: 40),
                         const SizedBox(height: 10),
                         Text('Error: ${snapshot.error}'),
                       ],
@@ -105,8 +96,9 @@ class _HallScreenState extends State<HallScreen> {
                   );
                 }
 
+                // 2. التحقق من وجود البيانات
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  print("No Data Found in 'halls' collection.");
+                  debugPrint("No Data Found in 'halls' collection.");
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -121,26 +113,27 @@ class _HallScreenState extends State<HallScreen> {
                   );
                 }
 
+                // 3. البيانات موجودة
                 final halls = snapshot.data!.docs;
-                print("Data Loaded Successfully. Count: ${halls.length}");
+                debugPrint("Data Loaded Successfully. Count: ${halls.length}");
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   itemCount: halls.length,
                   itemBuilder: (context, index) {
+                    // جلب البيانات وتحويلها لـ Map
                     final data = halls[index].data() as Map<String, dynamic>;
 
-                  return _RoomCard(
-                    room: _RoomItem(
-                      name: data['name'] ?? 'Unknown Room',
-                      // ✅ استخدام الدالة المساعدة بدلاً من المنطق المباشر
-                      capacity: _getCapacity(data['capacity']),
-                      floor: data['floor'] ?? 'Unknown Floor',
-                      // ✅ استخدام الدالة المساعدة
-                      status: _getStatus(data['status']),
-                      imageAsset: _roomImages[index % _roomImages.length],
-                    ),
-                  );
+                    // إنشاء _RoomItem (بدون const)
+                    return _RoomCard(
+                      room: _RoomItem(
+                        name: data['name'] ?? 'Unknown Room',
+                        capacity: data['capacity']?.toString() ?? '0',
+                        floor: data['floor'] ?? 'Unknown Floor',
+                        status: data['status'] == 'available' ? 'AVAILABLE' : 'RESERVED',
+                        imageAsset: _roomImages[index % _roomImages.length],
+                      ),
+                    );
                   },
                 );
               },
@@ -148,7 +141,6 @@ class _HallScreenState extends State<HallScreen> {
           ),
         ],
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
         onTap: (index) {
@@ -158,6 +150,7 @@ class _HallScreenState extends State<HallScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Theme.of(context).colorScheme.surface,
         selectedItemColor: const Color(0xFFCC3333),
+        // ignore: deprecated_member_use
         unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
@@ -176,6 +169,7 @@ class _HallScreenState extends State<HallScreen> {
 class _RoomCard extends StatelessWidget {
   final _RoomItem room;
 
+  // تمت إزالة const من هنا لأن الـ Object يتغير في كل مرة
   const _RoomCard({required this.room});
 
   @override
@@ -257,7 +251,7 @@ class _RoomCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: room.status == 'RESERVED'
                         ? null
-                        : () => context.go('/book-room'),
+                        : () => context.go('/book-room', extra: room.name), // تمرير اسم الغرفة للصفحة التالية
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFCC3333),
                       foregroundColor: Colors.white,
@@ -280,6 +274,7 @@ class _RoomCard extends StatelessWidget {
   }
 }
 
+// تمت إزالة const من الـ Constructor لاستقبال البيانات الديناميكية
 class _RoomItem {
   final String name;
   final String capacity;

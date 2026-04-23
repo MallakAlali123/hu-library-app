@@ -6,7 +6,7 @@ class HallReservationModel {
   final String date;
   final String timeFrom;
   final String timeTo;
-  final String status;
+  final String status; // pending, approved, rejected
 
   HallReservationModel({
     required this.reservationId,

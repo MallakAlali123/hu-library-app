@@ -1,17 +1,9 @@
-{
-  "app_title": "مكتبة الجامعة الهاشمية",
-  "settings": "الإعدادات",
-  "account": "الحساب",
-  "display_name": "الاسم المعروض",
-  "save_changes": "حفظ التغييرات",
-  "appearance": "المظهر",
-  "dark_mode": "الوضع الليلي",
-  "enable_dark_theme": "تفعيل الوضع الليلي",
-  "general": "عام",
-  "clear_cache": "مسح الذاكرة المؤقتة",
-  "language": "اللغة",
-  "rate_us": "قيمنا",
-  "home": "الرئيسية",
-  "profile": "الملف الشخصي",
-  "logout": "تسجيل خروج"
+{"login_as": "تسجيل الدخول كـ",
+"student": "طالب",
+"librarian": "أمين مكتبة",
+"admin": "مدير",
+"role_mismatch": "نوع الحساب غير مطابق",
+"librarian_email_invalid": "يجب أن ينتهي الإيميل بـ @lib.hu.edu.jo",
+"admin_email_invalid": "يجب أن ينتهي الإيميل بـ @admin.hu.edu.jo",
+"student_email_invalid": "لا يمكن تسجيل الدخول بهذا الإيميل كطالب"
 }

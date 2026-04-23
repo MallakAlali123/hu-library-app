@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
+import 'package:easy_localization/easy_localization.dart';
 import '../../services/auth_service.dart';
+
+enum UserRole { student, librarian, admin }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +18,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  UserRole _selectedRole = UserRole.student;
   final AuthService _authService = AuthService();
+
+  static const _red = Color(0xFFCC3333);
 
   @override
   void dispose() {
@@ -26,44 +31,53 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
 
-      final result = await _authService.login(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+    setState(() => _isLoading = true);
 
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    final result = await _authService.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      role: _selectedRole.name, // 'student' | 'librarian' | 'admin'
+    );
 
-      if (result['success']) {
-        final role = await _authService.getUserRole();
-        if (!mounted) return;
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-        // توجيه حسب نوع المستخدم
-        if (role == 'librarian') {
+    if (result['success']) {
+      switch (_selectedRole) {
+        case UserRole.librarian:
           context.go('/librarian');
-        } else if (role == 'admin') {
+        case UserRole.admin:
           context.go('/admin');
-        } else {
+        case UserRole.student:
           context.go('/student');
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message']),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // الـ hint يتغير حسب الدور المختار
+  String get _emailHint {
+    switch (_selectedRole) {
+      case UserRole.librarian:
+        return 'name@lib.hu.edu.jo';
+      case UserRole.admin:
+        return 'name@admin.hu.edu.jo';
+      case UserRole.student:
+        return 'email_hint'.tr();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ✅ استخدام لون من الثيم
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -73,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header ─────────────────────────────────────
+                // ── Header ──────────────────────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -84,18 +98,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.menu_book_rounded, color: const Color(0xFFCC3333), size: 24),
+                      child: const Icon(Icons.menu_book_rounded, color: _red),
                     ),
                     Text(
-                      'HU Library'.tr(),
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                      'hu_library'.tr(),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 40),
 
-                // ── Hero Image ───────────────────────────────────
+                // ── Banner ──────────────────────────────────────
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Stack(
@@ -103,27 +117,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         width: double.infinity,
                         height: 180,
-                        color: const Color(0xFFCC3333),
+                        color: _red,
                         child: Center(
                           child: Image.asset(
                             'assets/images/logo.png',
                             height: 140,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_balance, size: 80, color: Colors.white),
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.account_balance,
+                              size: 80,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
                       Container(
-                        width: double.infinity,
                         height: 180,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           gradient: LinearGradient(
+                            colors: [Colors.transparent, Colors.black54],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.6),
-                            ],
                           ),
                         ),
                       ),
@@ -131,64 +144,83 @@ class _LoginScreenState extends State<LoginScreen> {
                         bottom: 20,
                         left: 20,
                         child: Text(
-                          'Welcome Back'.tr(),
-                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                          'welcome_back'.tr(),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
-                // ── Email Field ─────────────────────────────────
+                // ── Role Selector ───────────────────────────────
                 Text(
-                  'University Email'.tr(),
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                  'login_as'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _RoleChip(
+                      label: 'student'.tr(),
+                      icon: Icons.school_rounded,
+                      selected: _selectedRole == UserRole.student,
+                      onTap: () => setState(() => _selectedRole = UserRole.student),
+                    ),
+                    const SizedBox(width: 8),
+                    _RoleChip(
+                      label: 'librarian'.tr(),
+                      icon: Icons.local_library_rounded,
+                      selected: _selectedRole == UserRole.librarian,
+                      onTap: () => setState(() => _selectedRole = UserRole.librarian),
+                    ),
+                    const SizedBox(width: 8),
+                    _RoleChip(
+                      label: 'admin'.tr(),
+                      icon: Icons.admin_panel_settings_rounded,
+                      selected: _selectedRole == UserRole.admin,
+                      onTap: () => setState(() => _selectedRole = UserRole.admin),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                // ── Email ───────────────────────────────────────
+                Text('university_email'.tr()),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                    hintText: 'ID@std.hu.edu.jo'.tr(),
-                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
-                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF888888)),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5),
-                    ),
+                    hintText: _emailHint,
+                    prefixIcon: const Icon(Icons.email),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) return 'Please enter your email'.tr();
-                    if (!value.contains('@')) return 'Please enter a valid email'.tr();
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'enter_email'.tr();
+                    if (!v.contains('@')) return 'valid_email'.tr();
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 20),
 
-                // ── Password Field ──────────────────────────────
+                // ── Password ────────────────────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Password'.tr(),
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
-                    ),
+                    Text('password'.tr()),
                     GestureDetector(
                       onTap: () => context.go('/forgot-password'),
                       child: Text(
-                        'Forgot Password?'.tr(),
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFFCC3333)),
+                        'forgot_password'.tr(),
+                        style: const TextStyle(color: _red),
                       ),
                     ),
                   ],
@@ -198,94 +230,129 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: '••••••••••••••'.tr(),
-                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF888888)),
+                    hintText: '********',
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: const Color(0xFF888888)),
+                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your password'.tr();
-                    if (value.length < 6) return 'Password must be at least 6 characters'.tr();
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'enter_password'.tr();
+                    if (v.length < 6) return 'password_short'.tr();
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 32),
 
-                // ── Login Button ─────────────────────────────────
+                // ── Login Button ────────────────────────────────
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFCC3333),
+                      backgroundColor: _red,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 2,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: _isLoading
-                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Secure Login'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.login_rounded, size: 20),
-                            ],
-                          ),
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text('secure_login'.tr()),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                // ── Register Link ─────────────────────────────────
-                Center(
-                  child: Row(
+                // ── Register (طلاب فقط) ─────────────────────────
+                if (_selectedRole == UserRole.student)
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('New student? '.tr(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13)),
+                      Text('new_student'.tr()),
                       GestureDetector(
                         onTap: () => context.go('/register'),
                         child: Text(
-                          'Register your account'.tr(),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFCC3333), fontSize: 13),
+                          'register_account'.tr(),
+                          style: const TextStyle(color: _red),
                         ),
                       ),
                     ],
                   ),
-                ),
 
                 const SizedBox(height: 40),
 
-                // ── Footer ───────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.lock_outline, size: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
-                    const SizedBox(width: 6),
-                    Text(
-                      'ENCRYPTED SECURE PORTAL'.tr(),
-                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), letterSpacing: 1.2),
-                    ),
-                  ],
-                ),
+                // ── Footer ──────────────────────────────────────
+                Center(child: Text('secure_portal'.tr())),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Widget مساعد: زر اختيار الدور ───────────────────────────────
+class _RoleChip extends StatelessWidget {
+  const _RoleChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  static const _red = Color(0xFFCC3333);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? _red.withOpacity(0.1) : Colors.transparent,
+            border: Border.all(
+              color: selected ? _red : Theme.of(context).colorScheme.outline,
+              width: selected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: selected ? _red : Theme.of(context).colorScheme.outline,
+                size: 22,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  color: selected ? _red : Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ],
           ),
         ),
       ),

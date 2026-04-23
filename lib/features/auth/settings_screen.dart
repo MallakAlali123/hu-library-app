@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:easy_localization/easy_localization.dart'; // ✅ استيراد الترجمة
 import '../../services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,6 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
   
+  // متغير للوضع الليلي
   bool _isDarkMode = false;
 
   @override
@@ -30,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadThemePreference();
   }
 
-  // دالة تحميل الاسم
+  // تعديل دالة تحميل الاسم
   void _loadCurrentName() async {
     final user = _auth.currentUser;
     if (user != null) {
@@ -46,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         } else {
           // إذا لم توجد بيانات، قم بإنشائها الآن
           await docRef.set({
-            'name': 'Student', // اسم افتراضي
+            'name': 'Student',
             'email': user.email,
             'createdAt': DateTime.now(),
           });
@@ -106,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', value);
-    // ملاحظة: هذا سيطلب إعادة تشغيل التطبيق لتطبيق الثيم إذا استخدمت ThemeProvider، لكن للا توقف التطبيق، سنقوم فقط بحفظ القيمة.
+    // حفظ القيمة، سيتم تطبيقها عند إعادة التشغيل (أو يمكن إضافتها لـ ThemeProvider)
   }
 
   // مسح البيانات
@@ -129,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ✅ استخدام لون الخلفية من الثيم (يتغير بين الأبيض والأسود)
+      // ✅ استخدام لون الخلفية من الثيم (يتغير حسب الـ ThemeMode)
       backgroundColor: Theme.of(context).colorScheme.surface,
       
       appBar: AppBar(
@@ -149,7 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // 1. قسم الحساب
+          //1. قسم الحساب
           Text(
             'account'.tr(),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
@@ -159,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون الحاوية يعتمد على الثيم
+              color: Theme.of(context).colorScheme.surfaceContainerHighest, // لون الحاوية يعتمد على الثيم
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -173,7 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    hintText: 'Enter your name'.tr(),
+                    hintText: 'Enter your name',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   ),
@@ -199,7 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // 2. قسم المظهر (Appearance)
+          //2. قسم المظهر (Appearance)
           Text(
             'appearance'.tr(),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
@@ -216,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // 3. قسم عام (General)
+          //3. قسم عام (General)
           Text(
             'general'.tr(),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
@@ -228,7 +229,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'clear_cache'.tr(),
             onTap: _clearCache,
           ),
-          
           _SettingsTile(
             icon: Icons.language_outlined,
             title: 'language'.tr(),
@@ -282,7 +282,7 @@ class _SettingsSwitchTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest, 
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -302,7 +302,7 @@ class _SettingsSwitchTile extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String? trailing; // تصحيح اسم المتغير
+  final String? trailing;
   final VoidCallback onTap;
 
   const _SettingsTile({
@@ -315,7 +315,7 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest, // استخدام لون من الثيم
         borderRadius: BorderRadius.circular(12),
@@ -323,13 +323,11 @@ class _SettingsTile extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
-        title: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
-        // ✅ استخدام themeColor للنصوص
+        title: Text(title, style: TextStyle(fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (trailing != null)
-              Text(trailing!, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+            if (trailing != null) Text(trailing!, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
             const SizedBox(width: 8),
             Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
           ],

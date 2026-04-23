@@ -6,7 +6,7 @@ class BookModel {
   final String category;
   final String location;
   final int totalCopies;
-  final int availableCopies;
+  int availableCopies;
 
   BookModel({
     required this.bookId,
@@ -19,19 +19,7 @@ class BookModel {
     required this.availableCopies,
   });
 
-  factory BookModel.fromMap(Map<String, dynamic> map, String id) {
-    return BookModel(
-      bookId: id,
-      title: map['title'] ?? '',
-      author: map['author'] ?? '',
-      isbn: map['isbn'] ?? '',
-      category: map['category'] ?? '',
-      location: map['location'] ?? '',
-      totalCopies: map['totalCopies'] ?? 0,
-      availableCopies: map['availableCopies'] ?? 0,
-    );
-  }
-
+  // تحويل من Map (جاهز للاستخدام مع Firestore إذا احتجت مستقبلاً)
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -42,5 +30,19 @@ class BookModel {
       'totalCopies': totalCopies,
       'availableCopies': availableCopies,
     };
+  }
+
+  // تحويل من Firestore
+  factory BookModel.fromSnapshot(Map<String, dynamic> data, String id) {
+    return BookModel(
+      bookId: id,
+      title: data['title'] ?? '',
+      author: data['author'] ?? '',
+      isbn: data['isbn'] ?? '',
+      category: data['category'] ?? '',
+      location: data['location'] ?? '',
+      totalCopies: data['totalCopies'] ?? 0,
+      availableCopies: data['availableCopies'] ?? 0,
+    );
   }
 }

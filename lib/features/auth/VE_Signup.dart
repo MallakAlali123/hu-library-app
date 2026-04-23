@@ -18,8 +18,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   @override
   void dispose() {
-    for (var c in _controllers) c.dispose();
-    for (var f in _focusNodes) f.dispose();
+    for (var c in _controllers) {
+      c.dispose();
+    }
+    for (var f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -27,14 +31,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     final code = _controllers.map((c) => c.text).join();
     if (code.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the 4-digit code')),
+        const SnackBar(content: Text('Please enter 4-digit code')),
       );
       return;
     }
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
+    
     if (!mounted) return;
     setState(() => _isLoading = false);
+    
+    // استخدام go_router للتنقل
     context.go('/login');
   }
 
@@ -56,6 +63,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Header ───────────────────────────────────────
               Row(
                 children: [
                   GestureDetector(
@@ -67,14 +75,22 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         color: const Color(0xFFFFEEEE),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, color: Color(0xFFCC3333), size: 20),
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFFCC3333),
+                        size: 20,
+                      ),
                     ),
                   ),
                   const Expanded(
                     child: Text(
                       'Verify Email',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 36),
@@ -83,6 +99,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
               const SizedBox(height: 40),
 
+              // ── Email Icon ────────────────────────────────────
               Center(
                 child: Container(
                   width: double.infinity,
@@ -91,31 +108,46 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     color: const Color(0xFFFFF0F0),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.mark_email_read_outlined, size: 80, color: Color(0xFFCC3333)),
+                  child: const Icon(
+                    Icons.mark_email_read_outlined,
+                    size: 80,
+                    color: Color(0xFFCC3333),
+                  ),
                 ),
               ),
 
               const SizedBox(height: 32),
 
+              // ── Title ─────────────────────────────────────────
               const Center(
                 child: Text(
                   'Check your email',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
                 ),
               ),
 
               const SizedBox(height: 12),
 
+              // ── Subtitle ──────────────────────────────────────
               Center(
                 child: Text(
                   "We've sent a 4-digit verification code to\n${widget.email}\nPlease enter it below\nto confirm your account.",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.6),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF888888),
+                    height: 1.6,
+                  ),
                 ),
               ),
 
               const SizedBox(height: 40),
 
+              // ── Code Input (4 خانات) ──────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(4, (index) {
@@ -129,14 +161,28 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
                       maxLength: 1,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
                       decoration: InputDecoration(
                         counterText: '',
                         filled: true,
                         fillColor: const Color(0xFFF9F9F9),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCC3333), width: 1.5)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                              color: Color(0xFFCC3333), width: 1.5),
+                        ),
                       ),
                       onChanged: (value) => _onCodeChanged(value, index),
                     ),
@@ -146,6 +192,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
               const SizedBox(height: 40),
 
+              // ── Verify Button ─────────────────────────────────
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -154,25 +201,43 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFCC3333),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFFCC3333).withOpacity(0.7),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    disabledBackgroundColor:
+                        // ignore: deprecated_member_use
+                        const Color(0xFFCC3333).withOpacity(0.7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 2,
                   ),
                   child: _isLoading
-                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                      : const Text('Verify', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Text(
+                          'Verify',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
 
               const SizedBox(height: 20),
 
+              // ── Resend Code ───────────────────────────────────
               Center(
                 child: RichText(
                   text: TextSpan(
                     style: const TextStyle(fontSize: 13),
                     children: [
                       const TextSpan(
-                        text: "Didn't receive the code? ",
+                        text: "Didn't receive code? ",
                         style: TextStyle(color: Color(0xFF888888)),
                       ),
                       WidgetSpan(
@@ -184,7 +249,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                           },
                           child: const Text(
                             'Resend Code',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFCC3333)),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFCC3333),
+                            ),
                           ),
                         ),
                       ),
@@ -195,10 +264,15 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
               const SizedBox(height: 32),
 
+              // ── Footer ───────────────────────────────────────
               const Center(
                 child: Text(
                   'Secure verification powered by AuthGuard',
-                  style: TextStyle(fontSize: 11, color: Color(0xFFAAAAAA), letterSpacing: 0.3),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFFAAAAAA),
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
+import 'package:easy_localization/easy_localization.dart';
 
 class NewPassword extends StatefulWidget {
   const NewPassword({super.key});
@@ -39,8 +39,8 @@ class _NewPasswordState extends State<NewPassword> {
 
     // هنا يجب إضافة منطق إعادة تعيين كلمة المرور الحقيقية في Firebase
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Password reset successfully!'.tr()),
+      const SnackBar(
+        content: Text('Password reset successfully!'),
         backgroundColor: Colors.green,
       ),
     );
@@ -119,7 +119,7 @@ class _NewPasswordState extends State<NewPassword> {
                   children: [
                     Text(
                       'PASSWORD REQUIREMENTS'.tr(),
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFFCC3333)),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFCC3333)),
                     ),
                     const SizedBox(height: 12),
                     _buildRequirementRow('At least 8 characters long'.tr(), true),
@@ -139,7 +139,10 @@ class _NewPasswordState extends State<NewPassword> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 2,
                   ),
-                  child: Text('Reset Password'.tr(), style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                 child: Text(
+  'Reset Password'.tr(), 
+  style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)
+),
                 ),
               ),
               const SizedBox(height: 24),
@@ -153,7 +156,7 @@ class _NewPasswordState extends State<NewPassword> {
                       children: [
                         TextSpan(
                           text: 'Contact Support'.tr(),
-                          style: TextStyle(color: const Color(0xFFCC3333), fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: Color(0xFFCC3333), fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -203,20 +206,20 @@ class _NewPasswordState extends State<NewPassword> {
     );
   }
 
-    Widget _buildRequirementRow(String text, bool isMet) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Row(
-          children: [
-            Icon(
-              isMet ? Icons.check_circle_outline : Icons.circle_outlined,
-              size: 16,
-              color: isMet ? Colors.green : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface))),
-          ],
-        ),
-      );
-    }
+  Widget _buildRequirementRow(String text, bool isMet) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle_outline : Icons.circle_outlined,
+            size: 16,
+            color: isMet ? Colors.green : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface))),
+        ],
+      ),
+    ); // ✅ إغلاق الدالة بشكل صحيح
   }
+}
