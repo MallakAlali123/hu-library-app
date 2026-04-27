@@ -13,7 +13,7 @@ class AdminEditProfileScreen extends StatefulWidget {
 class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
   final Color primaryRed = const Color(0xFFB01E1E);
   final Color bgGrey = const Color(0xFFF8F9FA);
-  
+
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _emailController;
@@ -39,20 +39,18 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
       try {
         final user = _auth.currentUser;
         if (user != null) {
-          // تحديث الاسم في Firebase Auth
           await user.updateDisplayName(_nameController.text);
-          
-          // تحديث البيانات في Firestore
           await _firestore.collection('users').doc(user.uid).update({
             'name': _nameController.text,
             'email': _emailController.text,
           });
-
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile updated successfully!"), backgroundColor: Colors.green),
+              const SnackBar(
+                  content: Text("Profile updated successfully!"),
+                  backgroundColor: Colors.green),
             );
-            context.pop(); // العودة للخلف بعد الحفظ
+            context.pop();
           }
         }
       } catch (e) {
@@ -65,6 +63,9 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ الإصلاح: قراءة الـ photoURL مرة واحدة
+    final photoUrl = _auth.currentUser?.photoURL ?? '';
+
     return Scaffold(
       backgroundColor: bgGrey,
       appBar: AppBar(
@@ -72,7 +73,13 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin/account');
+            }
+          },
         ),
         title: const Text("Edit Profile", style: TextStyle(color: Colors.black)),
         centerTitle: true,
@@ -87,16 +94,23 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
               Center(
                 child: Stack(
                   children: [
+                    // ✅ الإصلاح: أيقونة افتراضية بدل via.placeholder.com
                     CircleAvatar(
                       radius: 60,
-                      backgroundImage: NetworkImage(_auth.currentUser?.photoURL ?? 'https://via.placeholder.com/150'),
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage:
+                          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                      child: photoUrl.isEmpty
+                          ? Icon(Icons.person, size: 60, color: Colors.grey[600])
+                          : null,
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: primaryRed, shape: BoxShape.circle),
+                        decoration:
+                            BoxDecoration(color: primaryRed, shape: BoxShape.circle),
                         child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
                       ),
                     )
@@ -115,9 +129,11 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryRed,
                     padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape:
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontSize: 16)),
+                  child: const Text("Save Changes",
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
               )
             ],
@@ -127,11 +143,14 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
     );
   }
 
-  Widget _buildInputField(String label, TextEditingController controller, {bool enabled = true}) {
+  Widget _buildInputField(String label, TextEditingController controller,
+      {bool enabled = true}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+        Text(label,
+            style:
+                const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -143,7 +162,8 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {

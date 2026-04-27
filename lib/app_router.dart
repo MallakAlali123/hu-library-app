@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hu_library_app/features/auth/LibraryServicesPage.dart';
+import 'package:hu_library_app/features/auth/book_suggestion.dart';
 import 'package:hu_library_app/features/auth/logs_screen.dart';
 import 'package:hu_library_app/features/auth/roles_screen.dart';
 
@@ -262,6 +264,11 @@ final GoRouter appRouter = GoRouter(
 GoRoute(
   path: '/admin/roles',
   builder: (context, state) => const RolesScreen(),
+),
+
+GoRoute(
+  path: '/admin/suggestions',
+  builder: (context, state) => const BookSuggestionsScreen(),
 ),
   ],
 );

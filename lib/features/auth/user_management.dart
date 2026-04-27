@@ -60,13 +60,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Stream<QuerySnapshot> _getUsersStream() {
     Query query = _firestore.collection('users');
-
     if (_selectedFilter == "Librarians") {
       query = query.where('role', isEqualTo: 'librarian');
     } else if (_selectedFilter == "Students") {
       query = query.where('role', isEqualTo: 'student');
     }
-
     return query.orderBy('name').snapshots();
   }
 
@@ -207,9 +205,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
+        // ✅ الإصلاح: زر الرجوع يرجع للـ Dashboard
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: primaryRed),
-          onPressed: () => context.go('/admin'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin');
+            }
+          },
         ),
         title: Text("Academic Curator Admin",
             style: TextStyle(color: primaryRed, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -227,7 +232,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           children: [
             const Align(
               alignment: Alignment.centerRight,
-              child: Text("إدارة المستخدمين", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              child: Text("إدارة المستخدمين",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -250,7 +256,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   return Center(child: Text("Error: ${snapshot.error}"));
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No users found.", style: TextStyle(color: Colors.grey)));
+                  return const Center(
+                      child: Text("No users found.", style: TextStyle(color: Colors.grey)));
                 }
 
                 List<UserModel> users = snapshot.data!.docs
@@ -258,17 +265,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     .toList();
 
                 if (_searchQuery.isNotEmpty) {
-                  users = users.where((user) =>
-                    user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                    user.details.toLowerCase().contains(_searchQuery.toLowerCase())
-                  ).toList();
+                  users = users
+                      .where((user) =>
+                          user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                          user.details.toLowerCase().contains(_searchQuery.toLowerCase()))
+                      .toList();
                 }
 
                 if (users.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(20),
-                      child: Text("No users match your search.", style: TextStyle(color: Colors.grey)),
+                      child: Text("No users match your search.",
+                          style: TextStyle(color: Colors.grey)),
                     ),
                   );
                 }
@@ -319,13 +328,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: primaryRed,
       unselectedItemColor: Colors.grey,
-      currentIndex: 3, // 3 = USERS (لأننا في صفحة المستخدمين)
+      currentIndex: 3,
       onTap: (index) {
         switch (index) {
-          case 0: context.go('/admin/system-settings'); break; // SETTINGS
-          case 1: context.go('/admin/logs'); break;          // LOGS
-          case 2: context.go('/admin/roles'); break;          // ROLES
-          case 3: break;                                  // USERS (نفس الصفحة)
+          // ✅ الإصلاح: التنقل بين صفحات المجموعة بـ go عادي
+          case 0: context.go('/admin/system-settings'); break;
+          case 1: context.go('/admin/logs'); break;
+          case 2: context.go('/admin/roles'); break;
+          case 3: break;
         }
       },
       items: const [
@@ -345,7 +355,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         prefixIcon: const Icon(Icons.search, color: Colors.grey),
         filled: true,
         fillColor: Colors.grey[100],
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       ),
     );
   }
@@ -363,33 +374,33 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
- Widget _filterTab(String label) {
-  final isSelected = _selectedFilter == label;
-
-  return Expanded(
-    child: InkWell(
-      onTap: () => setState(() => _selectedFilter = label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: isSelected
-              ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]
-              : [],
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? primaryRed : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  Widget _filterTab(String label) {
+    final isSelected = _selectedFilter == label;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedFilter = label),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]
+                : [],
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected ? primaryRed : Colors.grey,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
+
   Widget _buildUserCard({
     required String id,
     required String name,
@@ -420,27 +431,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             const SizedBox(height: 5),
             Text(details, style: const TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 15),
-            const Text("ROLE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.grey)),
+            const Text("ROLE",
+                style: TextStyle(
+                    fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.grey)),
             const SizedBox(height: 5),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               decoration: BoxDecoration(color: roleBg, borderRadius: BorderRadius.circular(20)),
-              child: Text(role, style: TextStyle(color: roleText, fontSize: 12, fontWeight: FontWeight.bold)),
+              child: Text(role,
+                  style: TextStyle(color: roleText, fontSize: 12, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 InkWell(
-                    onTap: () => _toggleUserStatus(id, !isDeactivated),
-                    child: Row(
-                      children: [
-                        Icon(isDeactivated ? Icons.undo : Icons.block, color: Colors.grey),
-                        const SizedBox(width: 5),
-                        Text(isDeactivated ? "Activate" : "Deactivate",
-                            style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                      ],
-                    ),
+                  onTap: () => _toggleUserStatus(id, !isDeactivated),
+                  child: Row(
+                    children: [
+                      Icon(isDeactivated ? Icons.undo : Icons.block, color: Colors.grey),
+                      const SizedBox(width: 5),
+                      Text(isDeactivated ? "Activate" : "Deactivate",
+                          style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 30),
                 InkWell(

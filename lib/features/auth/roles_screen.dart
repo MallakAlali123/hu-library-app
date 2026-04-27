@@ -16,8 +16,7 @@ class _RolesScreenState extends State<RolesScreen> {
     {
       "role": "admin",
       "label": "Administrator",
-      "color": Colors.purple,
-      "bgColor": Colors.purple,
+      "color": const Color.fromARGB(255, 207, 14, 14),
       "icon": Icons.admin_panel_settings,
       "permissions": [
         "Manage all users",
@@ -31,8 +30,7 @@ class _RolesScreenState extends State<RolesScreen> {
     {
       "role": "librarian",
       "label": "Librarian",
-      "color": Colors.red,
-      "bgColor": Colors.red,
+      "color": const Color.fromARGB(255, 207, 14, 14),
       "icon": Icons.local_library,
       "permissions": [
         "Add / Edit books",
@@ -44,8 +42,7 @@ class _RolesScreenState extends State<RolesScreen> {
     {
       "role": "student",
       "label": "Student",
-      "color": Colors.blue,
-      "bgColor": Colors.blue,
+      "color": const Color.fromARGB(255, 207, 14, 14),
       "icon": Icons.school,
       "permissions": [
         "Browse books",
@@ -63,9 +60,16 @@ class _RolesScreenState extends State<RolesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
+        // ✅ الإصلاح: زر الرجوع يرجع للـ Dashboard
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: primaryRed),
-          onPressed: () => context.go('/admin/users'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin');
+            }
+          },
         ),
         title: Text("Roles & Permissions",
             style: TextStyle(color: primaryRed, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -107,7 +111,6 @@ class _RolesScreenState extends State<RolesScreen> {
       ),
       child: Column(
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -149,7 +152,6 @@ class _RolesScreenState extends State<RolesScreen> {
               ],
             ),
           ),
-          // Permissions
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -177,9 +179,10 @@ class _RolesScreenState extends State<RolesScreen> {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: primaryRed,
       unselectedItemColor: Colors.grey,
-      currentIndex: 2, // ROLES
+      currentIndex: 2,
       onTap: (index) {
         switch (index) {
+          // ✅ التنقل بين صفحات المجموعة بـ go عادي
           case 0: context.go('/admin/system-settings'); break;
           case 1: context.go('/admin/logs'); break;
           case 2: break;

@@ -349,6 +349,7 @@ class _ReservationRequestsScreenState extends State<ReservationRequestsScreen> {
           ),
           Container(
             padding: const EdgeInsets.all(10),
+            // ignore: deprecated_member_use
             decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
             child: const Icon(Icons.analytics_outlined, color: Colors.white),
           )

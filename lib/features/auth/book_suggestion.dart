@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
 
-// --- 1. نموذج بيانات الاقتراح (Suggestion Model) ---
+// --- Model ---
 class BookSuggestion {
   final String id;
   final String title;
@@ -9,7 +10,7 @@ class BookSuggestion {
   final String category;
   final String studentName;
   final String studentId;
-  final String status; // 'PENDING', 'REVIEWED', 'ADDED'
+  final String status;
   final DateTime createdAt;
 
   BookSuggestion({
@@ -38,11 +39,6 @@ class BookSuggestion {
   }
 }
 
-void main() => runApp(const MaterialApp(
-      home: BookSuggestionsScreen(),
-      debugShowCheckedModeBanner: false,
-    ));
-
 class BookSuggestionsScreen extends StatefulWidget {
   const BookSuggestionsScreen({super.key});
 
@@ -53,23 +49,25 @@ class BookSuggestionsScreen extends StatefulWidget {
 class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
   final Color primaryRed = const Color(0xFF8B0000);
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
-  // متغيرات للبحث والفلترة
-  String _searchQuery = "";
-  String _filterStatus = "All"; // All, Pending, Reviewed
 
-  // دالة تحديث حالة الاقتراح
+  String _searchQuery = "";
+  String _filterStatus = "All";
+
   Future<void> _updateStatus(String docId, String newStatus) async {
     try {
       await _firestore.collection('suggestions').doc(docId).update({
         'status': newStatus,
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Status updated to $newStatus"), backgroundColor: Colors.green),
+        SnackBar(
+            content: Text("Status updated to $newStatus"),
+            backgroundColor: Colors.green),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating status: $e"), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text("Error updating status: $e"),
+            backgroundColor: Colors.red),
       );
     }
   }
@@ -81,22 +79,37 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Icon(Icons.menu, color: primaryRed),
-        title: Text("The Academic Curator", style: TextStyle(color: primaryRed, fontSize: 16)),
+        // ✅ سهم الرجوع للـ Admin Dashboard
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: primaryRed),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin');
+            }
+          },
+        ),
+        title: Text("The Academic Curator",
+            style: TextStyle(color: primaryRed, fontSize: 16)),
         actions: const [
           Padding(
             padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(backgroundColor: Colors.black, child: Icon(Icons.person, size: 20, color: Colors.white)),
+            child: CircleAvatar(
+                backgroundColor: Colors.black,
+                child: Icon(Icons.person, size: 20, color: Colors.white)),
           )
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      // ✅ Bottom nav مع go_router
+      bottomNavigationBar: _buildBottomNav(context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Book Suggestions", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            const Text("Book Suggestions",
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text(
               "Review and curate student-recommended literature to enhance the university's academic collection.",
@@ -105,8 +118,6 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
             const SizedBox(height: 25),
             _buildSearchAndFilter(),
             const SizedBox(height: 25),
-            
-            // --- 2. StreamBuilder لربط البيانات ---
             StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection('suggestions')
@@ -116,8 +127,8 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
-                if (!snapshot.hasData) {
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return _buildAwaitingProposals();
                 }
 
@@ -125,16 +136,23 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
                     .map((doc) => BookSuggestion.fromSnapshot(doc))
                     .toList();
 
-                // تطبيق البحث والفلترة (Client-side filtering)
                 if (_filterStatus != "All") {
-                  suggestions = suggestions.where((s) => s.status == _filterStatus.toUpperCase()).toList();
+                  suggestions = suggestions
+                      .where((s) =>
+                          s.status == _filterStatus.toUpperCase())
+                      .toList();
                 }
-                
+
                 if (_searchQuery.isNotEmpty) {
-                  suggestions = suggestions.where((s) => 
-                    s.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                    s.author.toLowerCase().contains(_searchQuery.toLowerCase())
-                  ).toList();
+                  suggestions = suggestions
+                      .where((s) =>
+                          s.title
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()) ||
+                          s.author
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()))
+                      .toList();
                 }
 
                 if (suggestions.isEmpty) {
@@ -147,11 +165,12 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
                   itemCount: suggestions.length,
                   itemBuilder: (context, index) {
                     final suggestion = suggestions[index];
-                    
-                    // تحديد الألوان بناءً على الحالة
+
                     Color statusColor = Colors.orange[100]!;
-                    if (suggestion.status == 'REVIEWED') statusColor = Colors.blue[100]!;
-                    if (suggestion.status == 'ADDED') statusColor = Colors.green[100]!;
+                    if (suggestion.status == 'REVIEWED')
+                      statusColor = Colors.blue[100]!;
+                    if (suggestion.status == 'ADDED')
+                      statusColor = Colors.green[100]!;
 
                     return _buildSuggestionCard(
                       id: suggestion.id,
@@ -177,7 +196,8 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
   Widget _buildSearchAndFilter() {
     return Container(
       padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+          color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: [
           TextField(
@@ -187,7 +207,9 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
               prefixIcon: const Icon(Icons.search),
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 10),
@@ -197,27 +219,33 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () {
                     setState(() {
-                      // تبديل الفلتر: All -> Pending -> Reviewed -> All
-                      if (_filterStatus == "All") _filterStatus = "Pending";
-                      else if (_filterStatus == "Pending") _filterStatus = "Reviewed";
-                      else _filterStatus = "All";
+                      if (_filterStatus == "All")
+                        _filterStatus = "Pending";
+                      else if (_filterStatus == "Pending")
+                        _filterStatus = "Reviewed";
+                      else
+                        _filterStatus = "All";
                     });
                   },
                   icon: const Icon(Icons.filter_list, size: 18),
                   label: Text("Filter: $_filterStatus"),
-                  style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
+                  style:
+                      OutlinedButton.styleFrom(backgroundColor: Colors.white),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    // فتح شاشة إضافة اقتراح جديد (يمكنك إضافتها لاحقاً)
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Open Add Suggestion Screen")));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Open Add Suggestion Screen")));
                   },
                   icon: const Icon(Icons.add, size: 18, color: Colors.white),
-                  label: const Text("New Entry", style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
+                  label: const Text("New Entry",
+                      style: TextStyle(color: Colors.white)),
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: primaryRed),
                 ),
               ),
             ],
@@ -241,7 +269,9 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
     return Card(
       elevation: 0.5,
       margin: const EdgeInsets.only(bottom: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.grey[200]!)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(color: Colors.grey[200]!)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -251,16 +281,26 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(5)),
-                  child: Text(status, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black54)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                      color: statusColor,
+                      borderRadius: BorderRadius.circular(5)),
+                  child: Text(status,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54)),
                 ),
                 const Icon(Icons.more_vert, color: Colors.grey),
               ],
             ),
             const SizedBox(height: 10),
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(author, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(author,
+                style: const TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 10),
             Chip(
               label: Text(category, style: const TextStyle(fontSize: 11)),
@@ -271,14 +311,24 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
             const Divider(height: 30),
             Row(
               children: [
-                CircleAvatar(radius: 15, backgroundColor: Colors.red[50], child: Text(student.isNotEmpty ? student[0] : 'A', style: TextStyle(color: primaryRed, fontSize: 12))),
+                CircleAvatar(
+                    radius: 15,
+                    backgroundColor: Colors.red[50],
+                    child: Text(
+                        student.isNotEmpty ? student[0] : 'A',
+                        style:
+                            TextStyle(color: primaryRed, fontSize: 12))),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(student, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                      Text("ID: $studentId", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                      Text(student,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text("ID: $studentId",
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 11)),
                     ],
                   ),
                 )
@@ -291,16 +341,20 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _updateStatus(id, 'REVIEWED'),
-                      style: OutlinedButton.styleFrom(side: BorderSide(color: primaryRed)),
-                      child: Text("Mark Reviewed", style: TextStyle(color: primaryRed)),
+                      style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: primaryRed)),
+                      child: Text("Mark Reviewed",
+                          style: TextStyle(color: primaryRed)),
                     ),
                   ),
                 if (status != 'ADDED') const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _updateStatus(id, 'ADDED'),
-                    style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
-                    child: const Text("Add to Library", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryRed),
+                    child: const Text("Add to Library",
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -316,28 +370,44 @@ class _BookSuggestionsScreenState extends State<BookSuggestionsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
+        border:
+            Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         children: [
           Icon(Icons.auto_stories_outlined, color: Colors.grey[300], size: 40),
           const SizedBox(height: 10),
-          const Text("Awaiting New Proposals", style: TextStyle(fontWeight: FontWeight.bold)),
-          const Text("Student requests appear here automatically.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+          const Text("Awaiting New Proposals",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text("Student requests appear here automatically.",
+              style: TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNav() {
+  // ✅ Bottom nav مع context وgo_router
+  Widget _buildBottomNav(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       selectedItemColor: primaryRed,
+      unselectedItemColor: Colors.grey,
+      currentIndex: 0, // SUGGESTIONS
+      onTap: (index) {
+        switch (index) {
+          case 0: break; // نفس الصفحة
+          case 1: context.go('/admin/users'); break; // REQUESTS — عدّل لو عندك شاشة مخصصة
+          case 2: context.go('/admin'); break; // DASHBOARD
+        }
+      },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: "SUGGESTIONS"),
-        BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: "REQUESTS"),
-        BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "DASHBOARD"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.lightbulb), label: "SUGGESTIONS"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.book_outlined), label: "REQUESTS"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.grid_view), label: "DASHBOARD"),
       ],
     );
   }

@@ -14,12 +14,12 @@ class _LogsScreenState extends State<LogsScreen> {
   String _selectedFilter = "All";
 
   final List<Map<String, dynamic>> _logs = [
-    {"user": "Ahmad", "action": "Logged In", "time": "Today, 9:00 AM", "icon": Icons.login, "color": const Color.fromARGB(255, 228, 62, 21)},
-    {"user": "Dr. Sara", "action": "Added Book", "time": "Today, 9:15 AM", "icon": Icons.book, "color": const Color.fromARGB(255, 228, 66, 26)},
-    {"user": "Ahmad", "action": "Edited User", "time": "Today, 10:30 AM", "icon": Icons.edit, "color": const Color.fromARGB(255, 226, 64, 36)},
+    {"user": "Ahmad", "action": "Logged In", "time": "Today, 9:00 AM", "icon": Icons.login, "color": const Color.fromARGB(255, 231, 14, 14)},
+    {"user": "Dr. Sara", "action": "Added Book", "time": "Today, 9:15 AM", "icon": Icons.book, "color": const Color.fromARGB(255, 231, 14, 14)},
+    {"user": "Ahmad", "action": "Edited User", "time": "Today, 10:30 AM", "icon": Icons.edit, "color": const Color.fromARGB(255, 231, 14, 14)},
     {"user": "Dr. Sara", "action": "Deactivated User", "time": "Yesterday, 2:00 PM", "icon": Icons.block, "color": Colors.red},
-    {"user": "Ahmad", "action": "Generated Report", "time": "Yesterday, 4:00 PM", "icon": Icons.description, "color": const Color.fromARGB(255, 228, 68, 29)},
-    {"user": "Ahmad", "action": "Changed Settings", "time": "2 days ago", "icon": Icons.settings, "color": const Color.fromARGB(255, 226, 65, 44)},
+    {"user": "Ahmad", "action": "Generated Report", "time": "Yesterday, 4:00 PM", "icon": Icons.description, "color": const Color.fromARGB(255, 231, 14, 14)},
+    {"user": "Ahmad", "action": "Changed Settings", "time": "2 days ago", "icon": Icons.settings, "color": const Color.fromARGB(255, 231, 14, 14)},
   ];
 
   List<String> get _filters => ["All", "Login", "Books", "Users", "Reports"];
@@ -42,9 +42,16 @@ class _LogsScreenState extends State<LogsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
+        // ✅ الإصلاح: زر الرجوع يرجع للـ Dashboard
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: primaryRed),
-          onPressed: () => context.go('/admin/users'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin');
+            }
+          },
         ),
         title: Text("Activity Logs",
             style: TextStyle(color: primaryRed, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -66,7 +73,6 @@ class _LogsScreenState extends State<LogsScreen> {
               style: TextStyle(color: Colors.grey, fontSize: 13),
             ),
             const SizedBox(height: 20),
-            // Filter chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -94,7 +100,6 @@ class _LogsScreenState extends State<LogsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            // Summary cards
             Row(
               children: [
                 _buildSummaryCard("Total Logs", "${_logs.length}", Icons.list_alt, Colors.blue),
@@ -105,7 +110,6 @@ class _LogsScreenState extends State<LogsScreen> {
               ],
             ),
             const SizedBox(height: 25),
-            // Logs list
             ..._filteredLogs.map((log) => _buildLogItem(log)).toList(),
           ],
         ),
@@ -177,9 +181,10 @@ class _LogsScreenState extends State<LogsScreen> {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: primaryRed,
       unselectedItemColor: Colors.grey,
-      currentIndex: 1, // LOGS
+      currentIndex: 1,
       onTap: (index) {
         switch (index) {
+          // ✅ التنقل بين صفحات المجموعة بـ go عادي
           case 0: context.go('/admin/system-settings'); break;
           case 1: break;
           case 2: context.go('/admin/roles'); break;

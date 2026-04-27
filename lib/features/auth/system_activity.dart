@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 
-// --- Model ---
 class SystemSettings {
   final bool maintenanceMode;
   final bool errorReporting;
@@ -45,7 +44,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   final Color bgGrey = const Color(0xFFFBFBFB);
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // ✅ رجوع آمن
+  // ✅ زر الرجوع للـ Admin Dashboard
   void _goBack() {
     if (context.canPop()) {
       context.pop();
@@ -60,19 +59,12 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
           .collection('system_config')
           .doc('general_settings')
           .update({key: value});
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Setting updated successfully"),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text("Setting updated successfully"), backgroundColor: Colors.green),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error updating setting: $e"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Error updating setting: $e"), backgroundColor: Colors.red),
       );
     }
   }
@@ -81,25 +73,16 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgGrey,
-
-      // ---------------- AppBar ----------------
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: _goBack,
+          onPressed: _goBack, // ✅ يرجع للـ Dashboard
         ),
-
-        title: const Text(
-          "System Settings",
-          style: TextStyle(color: Colors.black),
-        ),
+        title: const Text("System Settings", style: TextStyle(color: Colors.black)),
       ),
-
       bottomNavigationBar: _buildBottomNav(),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -112,8 +95,6 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
             const SizedBox(height: 25),
             _buildQuickActions(),
             const SizedBox(height: 25),
-
-            // ---------------- Firebase Settings ----------------
             StreamBuilder<DocumentSnapshot>(
               stream: _firestore
                   .collection('system_config')
@@ -123,9 +104,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                 if (!snapshot.hasData || !snapshot.data!.exists) {
                   return _buildGeneralConfiguration(false, true, true);
                 }
-
                 final data = snapshot.data!.data() as Map<String, dynamic>;
-
                 return _buildGeneralConfiguration(
                   data['maintenanceMode'] ?? false,
                   data['errorReporting'] ?? true,
@@ -133,7 +112,6 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                 );
               },
             ),
-
             const SizedBox(height: 30),
             _buildFooterButtons(),
           ],
@@ -142,91 +120,145 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
     );
   }
 
-  // ---------------- Database Section ----------------
   Widget _buildDatabaseManagement() {
     return _buildCard(
       child: Column(
-        children: const [
-          Text("Database Management", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: 10),
-          Text("Manage system data and backups"),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Database Management",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Icon(Icons.storage, color: primaryRed),
+            ],
+          ),
+          const SizedBox(height: 5),
+          const Text("Manage the core repository of the Academic Curator. Ensure data integrity through scheduled backups and controlled restoration processes.",
+              style: TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 15),
+          _buildActionTile(Icons.refresh, "Initialize", "Wipe & Reset", Colors.grey),
+          const SizedBox(height: 10),
+          _buildActionTile(Icons.cloud_upload, "Backup Now", "Full Snapshot", primaryRed, filled: true),
+          const SizedBox(height: 10),
+          _buildActionTile(Icons.history, "Restore", "Point in Time", Colors.grey),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.grey[400], size: 16),
+              const SizedBox(width: 8),
+              const Text("Last automated backup: Today, 04:00 AM",
+                  style: TextStyle(color: Colors.grey, fontSize: 12)),
+              const Spacer(),
+              Text("View History", style: TextStyle(color: primaryRed, fontSize: 12)),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  // ---------------- Localization ----------------
+  Widget _buildActionTile(IconData icon, String title, String subtitle, Color color,
+      {bool filled = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      decoration: BoxDecoration(
+        color: filled ? primaryRed : Colors.white,
+        border: filled ? null : Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: filled ? Colors.white : color, size: 22),
+          const SizedBox(height: 5),
+          Text(title,
+              style: TextStyle(
+                  color: filled ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14)),
+          Text(subtitle,
+              style: TextStyle(
+                  color: filled ? Colors.white70 : Colors.grey, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLocalizationSection() {
     return _buildCard(
-      child: Column(
-        children: const [
-          Text("Localization & Language", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: 10),
-          Text("Language & timezone settings"),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text("Localization & Language",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Icon(Icons.language, color: primaryRed),
         ],
       ),
     );
   }
 
-  // ---------------- System Health ----------------
   Widget _buildSystemHealth() {
     return _buildCard(
       child: Column(
-        children: const [
-          Text("System Health", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: 10),
-          Text("All systems operational"),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("System Health", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(Icons.circle, color: Colors.green, size: 10),
+              const SizedBox(width: 8),
+              const Text("All systems operational", style: TextStyle(color: Colors.grey, fontSize: 13)),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  // ---------------- Quick Actions ----------------
   Widget _buildQuickActions() {
     return _buildCard(
       child: Column(
-        children: const [
-          Text("Quick Actions", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: 10),
-          Text("System maintenance tools"),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Quick Actions", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 10),
+          const Text("System maintenance tools", style: TextStyle(color: Colors.grey, fontSize: 13)),
         ],
       ),
     );
   }
 
-  // ---------------- General Config ----------------
-  Widget _buildGeneralConfiguration(
-      bool maintenanceMode, bool errorReporting, bool termSync) {
-    return Column(
-      children: [
-        const Text("General Configuration",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-
-        SwitchListTile(
-          title: const Text("Maintenance Mode"),
-          value: maintenanceMode,
-          onChanged: (val) => _updateSetting('maintenanceMode', val),
-          activeColor: primaryRed,
-        ),
-
-        SwitchListTile(
-          title: const Text("Error Reporting"),
-          value: errorReporting,
-          onChanged: (val) => _updateSetting('errorReporting', val),
-          activeColor: primaryRed,
-        ),
-
-        SwitchListTile(
-          title: const Text("Term Sync"),
-          value: termSync,
-          onChanged: (val) => _updateSetting('termSync', val),
-          activeColor: primaryRed,
-        ),
-      ],
+  Widget _buildGeneralConfiguration(bool maintenanceMode, bool errorReporting, bool termSync) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("General Configuration",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          SwitchListTile(
+            title: const Text("Maintenance Mode"),
+            value: maintenanceMode,
+            onChanged: (val) => _updateSetting('maintenanceMode', val),
+            activeColor: primaryRed,
+          ),
+          SwitchListTile(
+            title: const Text("Error Reporting"),
+            value: errorReporting,
+            onChanged: (val) => _updateSetting('errorReporting', val),
+            activeColor: primaryRed,
+          ),
+          SwitchListTile(
+            title: const Text("Term Sync"),
+            value: termSync,
+            onChanged: (val) => _updateSetting('termSync', val),
+            activeColor: primaryRed,
+          ),
+        ],
+      ),
     );
   }
 
-  // ---------------- Footer ----------------
   Widget _buildFooterButtons() {
     return Row(
       children: [
@@ -245,16 +277,16 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
-            child: const Text("Save"),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
           ),
         ),
       ],
     );
   }
 
-  // ---------------- Card ----------------
   Widget _buildCard({required Widget child}) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(15),
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -265,31 +297,23 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
     );
   }
 
-  // ---------------- Bottom Nav ----------------
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       selectedItemColor: primaryRed,
+      unselectedItemColor: Colors.grey,
       currentIndex: 0,
       onTap: (index) {
         switch (index) {
-          case 0:
-            context.go('/admin/system-settings');
-            break;
-          case 1:
-            context.go('/admin/logs');
-            break;
-          case 2:
-            context.go('/admin/roles');
-            break;
-          case 3:
-            context.go('/admin/users');
-            break;
+          case 0: break; // نفس الصفحة
+          case 1: context.go('/admin/logs'); break;
+          case 2: context.go('/admin/roles'); break;
+          case 3: context.go('/admin/users'); break;
         }
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "SETTINGS"),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: "LOGS"),
+        BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "SETTINGS"),
+        BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "LOGS"),
         BottomNavigationBarItem(icon: Icon(Icons.security), label: "ROLES"),
         BottomNavigationBarItem(icon: Icon(Icons.group), label: "USERS"),
       ],

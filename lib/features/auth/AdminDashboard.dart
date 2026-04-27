@@ -55,7 +55,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const Text("Library Metrics", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
               const Align(alignment: Alignment.centerRight, child: Text("Live Data", style: TextStyle(color: Colors.grey, fontSize: 12))),
               const SizedBox(height: 20),
-
               FutureBuilder(
                 future: Future.wait([_getTotalBooks(), _getActiveLoans(), _getPendingSuggestions()]),
                 builder: (context, AsyncSnapshot<List<int>> snapshot) {
@@ -69,11 +68,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   );
                 },
               ),
-
               const SizedBox(height: 25),
               _buildChartSection(),
               const SizedBox(height: 25),
-              _buildQuickActions(context), // ✅ هنا التعديل
+              _buildQuickActions(context),
               const SizedBox(height: 25),
               _buildRecentAlerts(),
             ],
@@ -88,7 +86,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text("The Digital\nCurator", style: TextStyle(color: Color(0xFF800000), fontWeight: FontWeight.bold, fontSize: 20)),
+        const Text("The Digital\nCurator",
+            style: TextStyle(color: Color(0xFF800000), fontWeight: FontWeight.bold, fontSize: 20)),
         Row(
           children: [
             IconButton(
@@ -97,7 +96,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
             const SizedBox(width: 5),
             GestureDetector(
-              onTap: () => context.go('/admin/account'),
+              // ✅ الإصلاح: استخدام context.push بدل context.go عشان يحفظ الـ stack
+              onTap: () => context.push('/admin/account'),
               child: CircleAvatar(
                 backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
                 child: user?.photoURL == null ? const Icon(Icons.person) : null,
@@ -118,20 +118,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Quick Actions", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text("Quick Actions",
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 15),
-
-          // ✅ FIXED
           _actionButton("Add New Book", Icons.add_circle_outline, onTap: () {
             context.push('/admin/add-book');
           }),
-
           _actionButton("Generate Report", Icons.description_outlined, onTap: () {
             context.push('/admin/generate-report');
           }),
-
           _actionButton("System Settings", Icons.settings_outlined, onTap: () {
-            context.go('/admin/system-settings');
+            context.push('/admin/system-settings');
           }),
         ],
       ),
@@ -144,7 +141,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -164,10 +162,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
       currentIndex: 2,
       onTap: (index) {
         switch (index) {
-          case 0: context.go('/admin/users'); break;
-          case 1: context.go('/admin/users'); break;
+          case 0: context.push('/admin/suggestions'); break;
+          case 1: context.push('/admin/users'); break; // ✅ push يحفظ الـ stack للرجوع
           case 2: break;
-          case 3: context.go('/admin/account'); break;
+          case 3: context.push('/admin/account'); break;
         }
       },
       items: const [
@@ -179,7 +177,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  // باقي الدوال (ما تغيرت)
   Widget _buildMetricCard(String title, String value, String badge, IconData icon, Color badgeColor) {
     return Card(
       elevation: 0,
@@ -205,8 +202,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: badgeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-              child: Text(badge, style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.bold)),
+              decoration: BoxDecoration(
+                  color: badgeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+              child: Text(badge,
+                  style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.bold)),
             )
           ],
         ),
@@ -226,3 +225,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return const Text("Alerts Placeholder");
   }
 }
+
+  Widget _buildChartSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      child: const Text("Chart Placeholder"),
+    );
+  }
+
+  Widget _buildRecentAlerts() {
+    return const Text("Alerts Placeholder");
+  }

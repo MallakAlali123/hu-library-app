@@ -44,13 +44,19 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.go('/admin'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin');
+            }
+          },
         ),
         title: const Text("Admin Settings", style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
       body: Directionality(
-        textDirection: TextDirection.ltr, // LTR for English
+        textDirection: TextDirection.ltr,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -71,50 +77,41 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           name: userData['name'] ?? 'Admin User',
                           role: userData['role'] ?? 'admin',
                           studentId: userData['studentId'] ?? 'N/A',
-                          photoUrl: user.photoURL ?? 'https://via.placeholder.com/150',
+                          // ✅ الإصلاح: إزالة via.placeholder.com
+                          photoUrl: user.photoURL ?? '',
                         );
                       },
                     ),
               const SizedBox(height: 20),
               _buildSectionHeader("Account Settings", Icons.manage_accounts_outlined),
-              
-              // ✅ تم تعديل زر Change Password
               _buildSettingsItem("Change Password", Icons.lock_outline, onTap: () {
-                context.go('/admin/change-password');
+                context.push('/admin/change-password');
               }),
-              
-              // ✅ تم تعديل زر Notification Preferences
               _buildSettingsItem("Notification Preferences", Icons.notifications_none, onTap: () {
-                context.go('/admin/notifications');
+                context.push('/admin/notifications');
               }),
-              
-              // ✅ تم تعديل زر Language & Location
               _buildSettingsItem("Language & Location", Icons.language, onTap: () {
-                context.go('/admin/language-location');
+                context.push('/admin/language-location');
               }),
-              
               const SizedBox(height: 20),
               _buildSectionHeader("User Management", Icons.group_outlined),
               _buildSettingsItem("Manage Users", Icons.person_add_alt,
-                  onTap: () => context.go('/admin/users')),
+                  onTap: () => context.push('/admin/users')),
               _buildSettingsItem("System Settings", Icons.settings,
-                  onTap: () => context.go('/admin/system-settings')),
+                  onTap: () => context.push('/admin/system-settings')),
               _buildSettingsItem("Admin Activity Log", Icons.history_edu, onTap: () {
-                 _showComingSoon("Activity Log");
+                _showComingSoon("Activity Log");
               }),
               const SizedBox(height: 20),
-              _buildAdvancedMetrics(), 
+              _buildAdvancedMetrics(),
               const SizedBox(height: 20),
               _buildSectionHeader("Technical Support", Icons.support_agent),
-              
               _buildSettingsItem("Open Support Ticket", Icons.help_outline, onTap: () {
-                context.go('/admin/support-ticket');
+                context.push('/admin/support-ticket');
               }),
-              
               _buildSettingsItem("System User Guide", Icons.menu_book, onTap: () {
-                context.go('/admin/user-guide');
+                context.push('/admin/user-guide');
               }),
-              
               const SizedBox(height: 20),
               _buildSystemStatus(),
               const SizedBox(height: 30),
@@ -127,7 +124,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  Widget _buildProfileCard({required String name, required String role, required String studentId, required String photoUrl}) {
+  Widget _buildProfileCard({
+    required String name,
+    required String role,
+    required String studentId,
+    required String photoUrl,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
@@ -136,10 +138,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           Stack(
             alignment: Alignment.bottomRight,
             children: [
+              // ✅ الإصلاح: أيقونة افتراضية بدل placeholder
               CircleAvatar(
                 radius: 50,
-                backgroundImage: NetworkImage(photoUrl),
-                onBackgroundImageError: (_, __) {},
+                backgroundColor: Colors.grey[200],
+                backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                child: photoUrl.isEmpty
+                    ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+                    : null,
               ),
               Container(
                 padding: const EdgeInsets.all(4),
@@ -161,9 +167,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
-              context.go('/admin/edit-profile');
-            },
+            onPressed: () => context.push('/admin/edit-profile'),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryRed,
               minimumSize: const Size(200, 45),
@@ -236,9 +240,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             children: [
               const Text("Advanced Metrics", style: TextStyle(fontWeight: FontWeight.bold)),
               InkWell(
-                onTap: () {
-                   context.go('/admin/reports');
-                },
+                onTap: () => context.push('/admin/reports'),
                 child: Text("View Full Report", style: TextStyle(color: primaryRed, fontSize: 12)),
               ),
             ],
