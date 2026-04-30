@@ -6,6 +6,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'firebase_options.dart';
 import 'app_router.dart';
 
+// ✅ Global notifier للثيم
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -14,6 +17,11 @@ void main() async {
   );
 
   await EasyLocalization.ensureInitialized();
+
+  // ✅ تحميل الثيم المحفوظ قبل التشغيل
+  final prefs = await SharedPreferences.getInstance();
+  final isDark = prefs.getBool('isDarkMode') ?? false;
+  themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
   runApp(
     EasyLocalization(
@@ -31,30 +39,19 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  Future<ThemeMode> _getThemeMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDark = prefs.getBool('isDarkMode') ?? false;
-    return isDark ? ThemeMode.dark : ThemeMode.light;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<ThemeMode>(
-      future: _getThemeMode(),
-      builder: (context, snapshot) {
-        final themeMode = snapshot.data ?? ThemeMode.light;
-
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, themeMode, _) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
-
           title: 'HU Library',
 
-          // 🌍 Localization
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
 
-          // 🎨 Themes
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
@@ -71,8 +68,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
 
-          themeMode: themeMode,
-
+          themeMode: themeMode, // ✅ يتغير فوراً
           routerConfig: appRouter,
         );
       },

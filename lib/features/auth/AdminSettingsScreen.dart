@@ -77,7 +77,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           name: userData['name'] ?? 'Admin User',
                           role: userData['role'] ?? 'admin',
                           studentId: userData['studentId'] ?? 'N/A',
-                          // ✅ الإصلاح: إزالة via.placeholder.com
                           photoUrl: user.photoURL ?? '',
                         );
                       },
@@ -88,7 +87,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 context.push('/admin/change-password');
               }),
               _buildSettingsItem("Notification Preferences", Icons.notifications_none, onTap: () {
-                context.push('/admin/notifications');
+                context.push('/admin/notification-preferences'); // ✅ تم التعديل
               }),
               _buildSettingsItem("Language & Location", Icons.language, onTap: () {
                 context.push('/admin/language-location');
@@ -138,7 +137,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           Stack(
             alignment: Alignment.bottomRight,
             children: [
-              // ✅ الإصلاح: أيقونة افتراضية بدل placeholder
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey[200],

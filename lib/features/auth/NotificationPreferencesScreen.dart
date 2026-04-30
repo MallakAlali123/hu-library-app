@@ -23,7 +23,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.go('/admin/account'),
+          onPressed: () => context.go('/admin/account'), // ✅ يبقى نفسه
         ),
         title: const Text("Notification Preferences", style: TextStyle(color: Colors.black)),
         centerTitle: true,
@@ -36,7 +36,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
               Icons.email,
               "Email Notifications",
               "Receive updates about library events via email.",
-              primaryRed, // ✅ تغيير إلى أحمر
+              primaryRed,
               [
                 _buildSwitchTile("Weekly Report", "Get summary of weekly activities.", _emailNotifs, (val) => setState(() => _emailNotifs = val)),
                 _buildSwitchTile("New Books Alert", "Notify when new books arrive.", _emailNotifs, (val) => setState(() => _emailNotifs = val)),
@@ -47,7 +47,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
               Icons.notifications_active,
               "Push Notifications",
               "Receive alerts on your device instantly.",
-              primaryRed, // ✅ تغيير إلى أحمر
+              primaryRed,
               [
                 _buildSwitchTile("System Alerts", "Important system updates.", _pushNotifs, (val) => setState(() => _pushNotifs = val)),
                 _buildSwitchTile("User Requests", "When students request books.", _pushNotifs, (val) => setState(() => _pushNotifs = val)),
@@ -58,7 +58,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
               Icons.sms,
               "SMS Notifications",
               "Get text messages for urgent matters.",
-              primaryRed, // ✅ تغيير إلى أحمر
+              primaryRed,
               [
                 _buildSwitchTile("Overdue Books", "Remind users about late returns.", _smsNotifs, (val) => setState(() => _smsNotifs = val)),
               ],
@@ -104,9 +104,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
           const Divider(height: 1),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            child: Column(
-              children: children,
-            ),
+            child: Column(children: children),
           ),
         ],
       ),
