@@ -4,8 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../services/auth_service.dart';
-import '../../main.dart'; // ✅ عشان نوصل لـ themeNotifier
+import '../../main.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,16 +14,15 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final AuthService _authService = AuthService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _tempNameController = TextEditingController();
 
   bool _isLoading = false;
   bool _isDarkMode = false;
   bool _hasUnsavedChanges = false;
+  String _originalName = ''; // ✅ الاسم الأصلي للمقارنة
 
   @override
   void initState() {
@@ -43,7 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (doc.exists) {
           final name = doc.data()?['name'] ?? '';
           setState(() {
-            _nameController.text = name;
+            _originalName = name; // ✅ احفظ الاسم الأصلي
             _tempNameController.text = name;
           });
         } else {
@@ -53,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'createdAt': DateTime.now(),
           });
           setState(() {
-            _nameController.text = 'Student';
+            _originalName = 'Student';
             _tempNameController.text = 'Student';
           });
         }
@@ -63,15 +61,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // ✅ حفظ الاسم مع Save/Discard dialog
+  // ✅ مقارنة صحيحة مع الاسم الأصلي
   void _onNameChanged(String value) {
     setState(() {
-      _hasUnsavedChanges = value.trim() != _nameController.text.trim();
+      _hasUnsavedChanges = value.trim() != _originalName.trim();
     });
   }
 
   void _updateName() async {
-    if (_tempNameController.text.trim().isEmpty) return;
+    final newName = _tempNameController.text.trim();
+    if (newName.isEmpty) return;
 
     setState(() => _isLoading = true);
     final user = _auth.currentUser;
@@ -79,10 +78,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       if (user != null) {
         await _firestore.collection('users').doc(user.uid).update({
-          'name': _tempNameController.text.trim(),
+          'name': newName,
         });
         setState(() {
-          _nameController.text = _tempNameController.text.trim();
+          _originalName = newName; // ✅ حدّث الاسم الأصلي بعد الحفظ
           _hasUnsavedChanges = false;
         });
         if (mounted) {
@@ -101,18 +100,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _discardChanges() {
     setState(() {
-      _tempNameController.text = _nameController.text;
+      _tempNameController.text = _originalName; // ✅ رجّع الاسم الأصلي
       _hasUnsavedChanges = false;
     });
   }
 
-  // ✅ Dark Mode يشتغل فوراً
   void _toggleTheme(bool value) async {
     setState(() => _isDarkMode = value);
     themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
@@ -120,7 +118,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setBool('isDarkMode', value);
   }
 
-  // ✅ Clear Cache مع تأكيد
   void _clearCache() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -145,7 +142,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final prefs = await SharedPreferences.getInstance();
       final isDark = prefs.getBool('isDarkMode');
       await prefs.clear();
-      // نحتفظ بإعداد الثيم بعد المسح
       if (isDark != null) await prefs.setBool('isDarkMode', isDark);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -158,10 +154,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // ✅ تغيير اللغة مع تأكيد
   void _changeLanguage() async {
     final currentLang = context.locale.languageCode;
-    final newLocale = currentLang == 'en' ? const Locale('ar') : const Locale('en');
+    final newLocale =
+        currentLang == 'en' ? const Locale('ar') : const Locale('en');
     final langName = newLocale.languageCode == 'ar' ? 'Arabic' : 'English';
 
     final confirm = await showDialog<bool>(
@@ -176,8 +172,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFCC3333)),
-            child: const Text('Switch', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFCC3333)),
+            child:
+                const Text('Switch', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -196,9 +194,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _showUnsavedDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Unsaved Changes'),
+        content: const Text(
+            'You have unsaved changes. Do you want to save before leaving?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _discardChanges();
+              context.go('/profile');
+            },
+            child:
+                const Text('Discard', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _updateName();
+              context.go('/profile');
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFCC3333)),
+            child:
+                const Text('Save', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    _nameController.dispose();
     _tempNameController.dispose();
     super.dispose();
   }
@@ -234,13 +264,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // ── 1. Account ─────────────────────────────────────────
+          // ── 1. Account ──────────────────────────────────────────
           Text(
             'account'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 10),
@@ -248,7 +281,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -265,7 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: _tempNameController,
-                  onChanged: _onNameChanged,
+                  onChanged: _onNameChanged, // ✅ يراقب التغييرات
                   decoration: InputDecoration(
                     hintText: 'Enter your name',
                     border: OutlineInputBorder(
@@ -274,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         horizontal: 12, vertical: 14),
                   ),
                 ),
-                // ✅ Save / Discard يظهران فقط لما في تغيير
+                // ✅ Save / Discard يظهران فقط لما في تغيير حقيقي
                 if (_hasUnsavedChanges) ...[
                   const SizedBox(height: 12),
                   Row(
@@ -308,8 +342,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       color: Colors.white, strokeWidth: 2),
                                 )
                               : Text('save_changes'.tr(),
-                                  style:
-                                      const TextStyle(color: Colors.white)),
+                                  style: const TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],
@@ -321,14 +354,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // ── 2. Appearance ──────────────────────────────────────
+          // ── 2. Appearance ───────────────────────────────────────
           Text(
             'appearance'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color:
-                  Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 10),
@@ -338,19 +373,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'dark_mode'.tr(),
             subtitle: 'enable_dark_theme'.tr(),
             value: _isDarkMode,
-            onChanged: _toggleTheme, // ✅ يشتغل فوراً
+            onChanged: _toggleTheme,
           ),
 
           const SizedBox(height: 24),
 
-          // ── 3. General ─────────────────────────────────────────
+          // ── 3. General ──────────────────────────────────────────
           Text(
             'general'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color:
-                  Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 10),
@@ -358,13 +395,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _SettingsTile(
             icon: Icons.cleaning_services_outlined,
             title: 'clear_cache'.tr(),
-            onTap: _clearCache, // ✅ مع dialog تأكيد
+            onTap: _clearCache,
           ),
           _SettingsTile(
             icon: Icons.language_outlined,
             title: 'language'.tr(),
-            trailing: context.locale.languageCode == 'ar' ? 'العربية' : 'English',
-            onTap: _changeLanguage, // ✅ مع dialog تأكيد
+            trailing: context.locale.languageCode == 'ar'
+                ? 'العربية'
+                : 'English',
+            onTap: _changeLanguage,
           ),
           _SettingsTile(
             icon: Icons.star_border_outlined,
@@ -381,42 +420,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  // ✅ Dialog لما يرجع وفي تغييرات غير محفوظة
-  void _showUnsavedDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Unsaved Changes'),
-        content: const Text(
-            'You have unsaved changes. Do you want to save before leaving?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _discardChanges();
-              context.go('/profile');
-            },
-            child: const Text('Discard', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _updateName();
-              context.go('/profile');
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCC3333)),
-            child:
-                const Text('Save', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// ── Reusable Widgets ───────────────────────────────────────────────
+// ── Reusable Widgets ────────────────────────────────────────────────
 
 class _SettingsSwitchTile extends StatelessWidget {
   final IconData icon;
@@ -442,7 +448,8 @@ class _SettingsSwitchTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+        leading:
+            Icon(icon, color: Theme.of(context).colorScheme.onSurface),
         title: Text(title,
             style: TextStyle(
                 fontSize: 15,
@@ -488,8 +495,9 @@ class _SettingsTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        onTap: onTap,
-        leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+        onTap: onTap, // ✅ هاد هو اللي بيشغّل الضغطة
+        leading:
+            Icon(icon, color: Theme.of(context).colorScheme.onSurface),
         title: Text(title,
             style: TextStyle(
                 fontSize: 15,

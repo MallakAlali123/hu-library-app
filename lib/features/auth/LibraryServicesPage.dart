@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LibraryServicesPage extends StatefulWidget {
   const LibraryServicesPage({super.key});
@@ -9,8 +9,21 @@ class LibraryServicesPage extends StatefulWidget {
 }
 
 class _LibraryServicesPageState extends State<LibraryServicesPage> {
+  int _currentIndex = 0;
+  
+  // اللون الأساسي للتطبيق (أحمر جامعة)
   final Color primaryRed = const Color(0xFF8B0000);
   final Color bgGrey = const Color(0xFFF8F9FA);
+  
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,257 +35,419 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         leading: Icon(Icons.menu, color: primaryRed),
         title: Row(
           children: [
-            Image.network('https://via.placeholder.com/40', height: 30), // استبدل بصورة الشعار
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: primaryRed.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text("Logo", style: TextStyle(color: primaryRed, fontWeight: FontWeight.bold, fontSize: 14)),
+            ),
             const SizedBox(width: 10),
             Text("The Academic Curator", style: TextStyle(color: primaryRed, fontSize: 16)),
           ],
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(
-                backgroundColor: Colors.black,
-                child: Icon(Icons.person, size: 20, color: Colors.white)
+      ),
+      
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildRequestsTab(),
+          _buildBooksTab(),
+          _buildAnnouncementsTab(),
+          _buildProfileTab(),
+        ],
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        selectedItemColor: primaryRed, // ✅ لون الأيقونة النشطة أحمر
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+            _searchQuery = "";
+            _searchController.clear();
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_turned_in), label: "Requests"),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Books"),
+          BottomNavigationBarItem(icon: Icon(Icons.campaign), label: "Announce"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // 1. Requests Tab
+  // ==========================================
+  Widget _buildRequestsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Reservation Requests", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text("Review and manage student requests.", style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 25),
+          _buildSearchBar(onChanged: (val) => setState(() => _searchQuery = val)),
+          const SizedBox(height: 25),
+          
+          StreamBuilder<QuerySnapshot>(
+            stream: _firestore.collection('loans').orderBy('borrowDate', descending: true).snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text("No requests found"));
+
+              final loans = snapshot.data!.docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final title = (data['bookTitle'] ?? '').toLowerCase();
+                final id = (data['borrowerId'] ?? '').toLowerCase();
+                return title.contains(_searchQuery.toLowerCase()) || id.contains(_searchQuery.toLowerCase());
+              }).toList();
+
+              return Column(
+                children: loans.map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final status = data['status'] ?? 'PENDING';
+                  return _buildLoanCard(doc.id, data, status);
+                }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // 2. Books Tab
+  // ==========================================
+  Widget _buildBooksTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Manage Books", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ElevatedButton.icon(
+                onPressed: () => _showBookDialog(),
+                icon: const Icon(Icons.add),
+                label: const Text("Add Book"),
+                style: ElevatedButton.styleFrom(backgroundColor: primaryRed), // ✅ زر أحمر
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildSearchBar(onChanged: (val) => setState(() => _searchQuery = val)),
+          const SizedBox(height: 20),
+
+          StreamBuilder<QuerySnapshot>(
+            stream: _firestore.collection('books').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+              if (!snapshot.hasData) return const Center(child: Text("No books found"));
+
+              final books = snapshot.data!.docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return (data['title'] ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
+              }).toList();
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: books.length,
+                itemBuilder: (context, index) {
+                  final book = books[index].data() as Map<String, dynamic>;
+                  return Card(
+                    child: ListTile(
+                      title: Text(book['title'] ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text("${book['author'] ?? 'Unknown'} • ${book['category'] ?? 'General'}"),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red), // ✅ أيقونة الحذف حمراء
+                        onPressed: () => _deleteDocument('books', books[index].id),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // 3. Announcements Tab
+  // ==========================================
+  Widget _buildAnnouncementsTab() {
+    final titleCtrl = TextEditingController();
+    final contentCtrl = TextEditingController();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          const Text("Announcements", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              children: [
+                TextField(
+                  controller: titleCtrl,
+                  decoration: const InputDecoration(labelText: "Announcement Title", border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: contentCtrl,
+                  maxLines: 4,
+                  decoration: const InputDecoration(labelText: "Message", border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (titleCtrl.text.isNotEmpty && contentCtrl.text.isNotEmpty) {
+                        _firestore.collection('announcements').add({
+                          'title': titleCtrl.text,
+                          'content': contentCtrl.text,
+                          'date': DateTime.now(),
+                        });
+                        titleCtrl.clear();
+                        contentCtrl.clear();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Announcement Posted')));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: primaryRed), // ✅ زر أحمر
+                    child: const Text("Post Announcement", style: TextStyle(color: Colors.white)),
+                  ),
+                )
+              ],
             ),
+          ),
+          const SizedBox(height: 30),
+          const Text("Recent Announcements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          StreamBuilder<QuerySnapshot>(
+            stream: _firestore.collection('announcements').orderBy('date', descending: true).snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final announce = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      title: Text(announce['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(announce['content'] ?? ''),
+                      trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => _deleteDocument('announcements', snapshot.data!.docs[index].id)), // ✅ حذف أحمر
+                    ),
+                  );
+                },
+              );
+            },
           )
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: primaryRed,
-        child: const Icon(Icons.search, color: Colors.white),
+    );
+  }
+
+  // ==========================================
+  // 4. Profile Tab
+  // ==========================================
+  Widget _buildProfileTab() {
+    TextEditingController nameCtrl = TextEditingController(text: "Admin Librarian");
+    TextEditingController emailCtrl = TextEditingController(text: "librarian@hu.edu.jo");
+    TextEditingController branchCtrl = TextEditingController(text: "Main Library");
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const CircleAvatar(radius: 50, backgroundColor: Colors.black, child: Icon(Icons.person, size: 50, color: Colors.white)),
+          const SizedBox(height: 20),
+          const Text("Librarian Profile", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 30),
+          
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(labelText: "Full Name", border: OutlineInputBorder(), prefixIcon: Icon(Icons.person)),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: emailCtrl,
+                    decoration: const InputDecoration(labelText: "Email", border: OutlineInputBorder(), prefixIcon: Icon(Icons.email)),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: branchCtrl,
+                    decoration: const InputDecoration(labelText: "Library Branch", border: OutlineInputBorder(), prefixIcon: Icon(Icons.location_on)),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated'), backgroundColor: Colors.green));
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: primaryRed), // ✅ زر أحمر
+                      child: const Text("Update Info", style: TextStyle(color: Colors.white)),
+                    ),
+                  )
+                ],
+              ),
+            )
+          )
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+    );
+  }
+
+  // ==========================================
+  // Helpers
+  // ==========================================
+  Widget _buildSearchBar({required Function(String) onChanged}) {
+    return TextField(
+      controller: _searchController,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        hintText: "Search...",
+        prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
+  Widget _buildLoanCard(String docId, Map<String, dynamic> data, String status) {
+    final title = data['bookTitle'] ?? 'Unknown';
+    final id = data['borrowerId'] ?? '---';
+    final date = data['borrowDate'] != null ? (data['borrowDate'] as Timestamp).toDate().toString().substring(0, 10) : '---';
+    
+    // تحديد لون الـ Chip ليكون دائماً ضمن طيف الأحمر/الرمادي ليتناسب مع التصميم
+    Color chipColor;
+    if (status == 'CONFIRMED') {
+      chipColor = primaryRed.withOpacity(0.1); // أحمر فاتح
+    } else if (status == 'REJECTED') {
+      chipColor = Colors.grey.shade300;
+    } else {
+      chipColor = Colors.orange.shade100; // برتقالي فاتح (قيد الانتظار)
+    }
+    
+    Color textColor = status == 'CONFIRMED' ? primaryRed : Colors.black54;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 15),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Reservation Requests", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                Chip(
+                  label: Text(status, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                  backgroundColor: chipColor,
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
-            const Text(
-              "Review and manage student academic book reservations.",
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-            const SizedBox(height: 25),
-            _buildSearchAndFilter(),
-            const SizedBox(height: 25),
-            
-            // عرض قائمة الطلبات (محاكاة للآن حتى يتم الربط بالـ Firebase)
-            _buildRequestCard(
-              title: "Advanced Quantum Mechanics",
-              author: "Dr. Julian S. Voss",
-              student: "Sarah Ahmed (HU-202409)",
-              date: "Oct 24, 2023",
-              status: "PENDING",
-              statusColor: Colors.blue[50]!,
-            ),
-            
-            _buildRequestCard(
-              title: "Architectural History of Amman",
-              author: "Professor Layla Nour",
-              student: "Omar Kassab (HU-202315)",
-              date: "Oct 22, 2023",
-              status: "CONFIRMED",
-              statusColor: Colors.green[50]!,
-              isConfirmed: true,
-            ),
-            
-            _buildRequestCard(
-              title: "Principles of Genetic Engineering",
-              author: "Dr. Sarah Thompson",
-              student: "Zaid Ammari (HU-202412)",
-              date: "Oct 26, 2023",
-              status: "PENDING",
-              statusColor: Colors.blue[50]!,
-            ),
+            Text("Student ID: $id", style: const TextStyle(color: Colors.grey)),
+            Text("Borrowed on: $date", style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 15),
+            if (status == 'PENDING')
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _updateStatus(docId, 'CONFIRMED'),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: primaryRed), // ✅ حدود حمراء
+                        backgroundColor: primaryRed.withOpacity(0.05)
+                      ),
+                      child: Text("Approve", style: TextStyle(color: primaryRed)), // ✅ نص أحمر
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _updateStatus(docId, 'REJECTED'),
+                      style: OutlinedButton.styleFrom(side: BorderSide(color: Colors.grey.shade400)),
+                      child: const Text("Reject", style: TextStyle(color: Colors.grey)),
+                    ),
+                  ),
+                ],
+              )
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSearchAndFilter() {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Search by title, author, or student name",
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.filter_list, size: 18),
-                  label: const Text("Filter"),
-                  style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.add, size: 18, color: Colors.white),
-                  label: const Text("New Entry", style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
+  Future<void> _updateStatus(String docId, String newStatus) async {
+    await _firestore.collection('loans').doc(docId).update({'status': newStatus});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request $newStatus')));
   }
 
-  Widget _buildRequestCard({
-    required String title,
-    required String author,
-    required String student,
-    required String date,
-    required String status,
-    required Color statusColor,
-    bool isConfirmed = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
-                child: Icon(isConfirmed ? Icons.verified : Icons.book_online, color: primaryRed, size: 20),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(12)),
-                child: Text(status, style: TextStyle(color: primaryRed, fontSize: 10, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Text(author, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(height: 15),
-          _buildInfoRow(Icons.person_outline, student),
-          const SizedBox(height: 5),
-          _buildInfoRow(Icons.calendar_today_outlined, "Reserved on $date"),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              if (!isConfirmed)
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: primaryRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: const Text("Approve", style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-              if (!isConfirmed) const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[200], elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                  child: const Text("Reject", style: TextStyle(color: Colors.black87)),
-                ),
-              ),
-              if (isConfirmed) const SizedBox(width: 10),
-              if (isConfirmed)
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: primaryRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: const Text("Undo", style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-              if (isConfirmed) const SizedBox(width: 10),
-              if (isConfirmed)
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
-                )
-            ],
-          )
-        ],
-      ),
-    );
+  Future<void> _deleteDocument(String collection, String docId) async {
+    await _firestore.collection(collection).doc(docId).delete();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleted')));
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: Colors.grey),
-        const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontSize: 12, color: Colors.black87)),
-      ],
-    );
-  }
-
-  Widget _buildWeeklySummary() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        image: const DecorationImage(
-          image: NetworkImage('https://via.placeholder.com/400x150/8B0000/FFFFFF?text=+'),
-          fit: BoxFit.cover,
+  void _showBookDialog() {
+    final titleCtrl = TextEditingController();
+    final authorCtrl = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Add Book"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(decoration: const InputDecoration(labelText: "Title"), controller: titleCtrl),
+            TextField(decoration: const InputDecoration(labelText: "Author"), controller: authorCtrl),
+          ],
         ),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Weekly Summary", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                Text(
-                  "You have processed 128 requests this week. 12 requests are still awaiting your review.",
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-              ],
-            ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              if(titleCtrl.text.isNotEmpty) {
+                _firestore.collection('books').add({
+                  'title': titleCtrl.text,
+                  'author': authorCtrl.text,
+                  'category': 'General'
+                });
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: primaryRed), // ✅ زر الحفظ أحمر
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
           ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.analytics_outlined, color: Colors.white),
-          )
         ],
       ),
     );
   }
-
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: primaryRed,
-      currentIndex: 1,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.lightbulb_outline), label: "SUGGESTIONS"),
-        BottomNavigationBarItem(icon: Icon(Icons.book), label: "REQUESTS"),
-        BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "DASHBOARD"),
-      ],
-    );
-  }}
+}
