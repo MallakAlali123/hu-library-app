@@ -1,5 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// --- 1. نموذج بيانات الكتاب (اختياري) ---
+class BookModel {
+  final String title;
+  final String author;
+  final String isbn;
+  final String category;
+
+  BookModel({
+    required this.title,
+    required this.author,
+    required this.isbn,
+    required this.category,
+  });
+}
 
 class AddNewBookScreen extends StatefulWidget {
   const AddNewBookScreen({super.key});
@@ -10,6 +26,7 @@ class AddNewBookScreen extends StatefulWidget {
 
 class _AddNewBookScreenState extends State<AddNewBookScreen> {
   final Color primaryRed = const Color(0xFFB01E1E);
+  final Color bgGrey = const Color(0xFFF8F9FA);
   final _formKey = GlobalKey<FormState>();
   
   late TextEditingController _titleController;
@@ -36,23 +53,52 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
   }
 
   void _goBack() {
-    if (context.canPop()) {
-      context.pop(); // ✅ يرجع طبيعي
+    // ✅ محاولة العودة بناءً على حالة الـ Stack
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
     } else {
-      context.go('/admin'); // ✅ fallback إذا ما في stack
+      context.go('/admin');
+    }
+  }
+
+  Future<void> _submitBook() async {
+    if (!_formKey.currentState!.validate()) {
+      try {
+        // محاكاة إضافة كتاب إلى Firestore
+        // في التطبيق الحقيقي، استخدم الكود التالي:
+        // await FirebaseFirestore.instance.collection('books').add({...});
+        
+        // للآن سنظهر رسالة نجاح ونعود
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Book Added Successfully ✅"),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          _goBack();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error adding book: $e"), backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: bgGrey,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: _goBack, // ✅ تم التعديل
+          onPressed: _goBack, // ✅ تم تعديل الزر لاستخدام دالة _goBack
         ),
         title: const Text("Add New Book", style: TextStyle(color: Colors.black)),
         centerTitle: true,
@@ -63,27 +109,29 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
           key: _formKey,
           child: Column(
             children: [
+              // صورة الغلاف
               Container(
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
                 ),
-                child: Center(
+                child: const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.image_outlined, size: 50, color: Colors.grey[400]),
+                      Icon(Icons.image_outlined, size: 50, color: Color.fromARGB(255, 206, 14, 14)),
                       const SizedBox(height: 10),
-                      Text("Tap to upload cover image", style: TextStyle(color: Colors.grey[500])),
+                      Text("Tap to upload cover image", style: TextStyle(color: Color.fromARGB(255, 206, 14, 14))),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               
+              // الحقول
               _buildInputField("Book Title", "Enter book title", _titleController),
               const SizedBox(height: 15),
               _buildInputField("Author", "Enter author name", _authorController),
@@ -96,26 +144,15 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Book Added Successfully"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-
-                      _goBack(); // ✅ بدل pop
-                    }
-                  },
+                  onPressed: _submitBook,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryRed,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text("Add Book", style: TextStyle(color: Colors.white)),
+                  child: const Text("Add Book", style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -123,6 +160,7 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
     );
   }
 
+  // ✅ دالة مساعدة (Helper Method) لبناء حقول الإدخال بسهولة
   Widget _buildInputField(String label, String hint, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,10 +173,7 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
             filled: true,
             fillColor: Colors.white,
             hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           ),
           validator: (value) {

@@ -20,6 +20,15 @@ import 'package:hu_library_app/features/auth/forgot_password_verify_n.dart';
 import 'package:hu_library_app/features/auth/notifications_screen.dart';
 import 'package:hu_library_app/features/auth/settings_screen.dart';
 
+// ✅ الصفحات الجديدة
+import 'package:hu_library_app/features/auth/arabic_book_purchase_page.dart';
+import 'package:hu_library_app/features/auth/foreign_book_purchase_page.dart';
+import 'package:hu_library_app/features/auth/thesis_inquiry_page.dart';
+import 'package:hu_library_app/features/auth/new_books_page.dart';
+import 'package:hu_library_app/features/auth/announcements_page.dart';
+import 'package:hu_library_app/features/auth/librarian_info_page.dart';
+import 'package:hu_library_app/features/auth/chatbot_page.dart';
+
 import 'package:hu_library_app/features/auth/home_page.dart' as student;
 import 'package:hu_library_app/features/auth/LibraryServicesPage.dart' as librarian;
 
@@ -79,7 +88,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/forgot-password-verify-n', builder: (context, state) => const ForgotPasswordVerify_n()),
     GoRoute(path: '/new-password', builder: (context, state) => const NewPassword()),
 
-    // Student
+    // ─── Student ───────────────────────────────────────────────
     GoRoute(path: '/student', builder: (context, state) => const student.LibraryServicesPage()),
     GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
     GoRoute(path: '/hall', builder: (context, state) => const HallScreen()),
@@ -87,15 +96,38 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/donate', builder: (context, state) => const DonateScreen()),
     GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
     GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
-    GoRoute(path: '/search', builder: (context, state) => _placeholderScreen(context, 'Search Books', Icons.search_rounded, '/student')),
-    GoRoute(path: '/my-books', builder: (context, state) => _placeholderScreen(context, 'My Borrowed Books', Icons.menu_book_rounded, '/student')),
-    GoRoute(path: '/my-requests', builder: (context, state) => _placeholderScreen(context, 'My Requests', Icons.assignment_outlined, '/student')),
-    GoRoute(path: '/book-suggestion', builder: (context, state) => _placeholderScreen(context, 'Book Suggestion', Icons.lightbulb_outline_rounded, '/student')),
+    GoRoute(
+      path: '/search',
+      builder: (context, state) => _placeholderScreen(context, 'Search Books', Icons.search_rounded, '/student'),
+    ),
+    GoRoute(
+      path: '/my-books',
+      builder: (context, state) => _placeholderScreen(context, 'My Borrowed Books', Icons.menu_book_rounded, '/student'),
+    ),
+    GoRoute(
+      path: '/my-requests',
+      builder: (context, state) => _placeholderScreen(context, 'My Requests', Icons.assignment_outlined, '/student'),
+    ),
+    GoRoute(
+      path: '/book-suggestion',
+      builder: (context, state) => _placeholderScreen(context, 'Book Suggestion', Icons.lightbulb_outline_rounded, '/student'),
+    ),
 
-    // Librarian
+    // ✅ الصفحات الجديدة — Submit Requests
+    GoRoute(path: '/arabic-book-purchase', builder: (context, state) => const ArabicBookPurchasePage()),
+    GoRoute(path: '/foreign-book-purchase', builder: (context, state) => const ForeignBookPurchasePage()),
+    GoRoute(path: '/thesis-inquiry', builder: (context, state) => const ThesisInquiryPage()),
+
+    // ✅ الصفحات الجديدة — Explore
+    GoRoute(path: '/new-books', builder: (context, state) => const NewBooksPage()),
+    GoRoute(path: '/announcements', builder: (context, state) => const AnnouncementsPage()),
+    GoRoute(path: '/librarian-info', builder: (context, state) => const LibrarianInfoPage()),
+    GoRoute(path: '/chatbot', builder: (context, state) => const ChatbotPage()),
+
+    // ─── Librarian ─────────────────────────────────────────────
     GoRoute(path: '/librarian', builder: (context, state) => const librarian.LibraryServicesPage()),
 
-    // Admin
+    // ─── Admin ─────────────────────────────────────────────────
     GoRoute(path: '/admin', builder: (context, state) => const AdminDashboard()),
     GoRoute(path: '/admin/users', builder: (context, state) => const UserManagementScreen()),
     GoRoute(path: '/admin/system-settings', builder: (context, state) => const SystemSettingsScreen()),
@@ -115,18 +147,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/admin/logs', builder: (context, state) => const LogsScreen()),
     GoRoute(path: '/admin/roles', builder: (context, state) => const RolesScreen()),
     GoRoute(path: '/admin/suggestions', builder: (context, state) => const BookSuggestionsScreen()),
-
-    // ✅ notifications - شاشة عرض الإشعارات من Firestore
-    GoRoute(
-      path: '/admin/notifications',
-      builder: (context, state) => const NotificationsAdminScreen(),
-    ),
-
-    // ✅ notification-preferences - شاشة إعدادات الإشعارات (مسار جديد)
-    GoRoute(
-      path: '/admin/notification-preferences',
-      builder: (context, state) => const NotificationPreferencesScreen(),
-    ),
+    GoRoute(path: '/admin/notifications', builder: (context, state) => const NotificationsAdminScreen()),
+    GoRoute(path: '/admin/notification-preferences', builder: (context, state) => const NotificationPreferencesScreen()),
   ],
 );
 

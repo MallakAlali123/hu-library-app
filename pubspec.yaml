@@ -50,4 +50,11 @@ flutter:
     - assets/images/room1.jpg
     - assets/images/room2.jpg
     - assets/images/room3.jpg
+    - assets/images/arabic_book_purchase.png
+    - assets/images/foreign_book_purchase.png
+    - assets/images/thesis_inquiry.png
+    - assets/images/new_books.png
+    - assets/images/announcements.png
+    - assets/images/librarian.png
+    - assets/images/chatbot.png
     - assets/translations/
