@@ -57,4 +57,5 @@ flutter:
     - assets/images/announcements.png
     - assets/images/librarian.png
     - assets/images/chatbot.png
-    - assets/translations/
+    - assets/translations/en.json
+    - assets/translations/ar.json

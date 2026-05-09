@@ -28,6 +28,7 @@ import 'package:hu_library_app/features/auth/new_books_page.dart';
 import 'package:hu_library_app/features/auth/announcements_page.dart';
 import 'package:hu_library_app/features/auth/librarian_info_page.dart';
 import 'package:hu_library_app/features/auth/chatbot_page.dart';
+import 'package:hu_library_app/features/auth/book_suggestion_page.dart'; // ✅ الجديد
 
 import 'package:hu_library_app/features/auth/home_page.dart' as student;
 import 'package:hu_library_app/features/auth/LibraryServicesPage.dart' as librarian;
@@ -108,17 +109,19 @@ final GoRouter appRouter = GoRouter(
       path: '/my-requests',
       builder: (context, state) => _placeholderScreen(context, 'My Requests', Icons.assignment_outlined, '/student'),
     ),
+
+    // ✅ غيّرنا book-suggestion من placeholder لصفحة حقيقية
     GoRoute(
       path: '/book-suggestion',
-      builder: (context, state) => _placeholderScreen(context, 'Book Suggestion', Icons.lightbulb_outline_rounded, '/student'),
+      builder: (context, state) => const BookSuggestionPage(),
     ),
 
-    // ✅ الصفحات الجديدة — Submit Requests
+    // ─── Submit Requests ───────────────────────────────────────
     GoRoute(path: '/arabic-book-purchase', builder: (context, state) => const ArabicBookPurchasePage()),
     GoRoute(path: '/foreign-book-purchase', builder: (context, state) => const ForeignBookPurchasePage()),
     GoRoute(path: '/thesis-inquiry', builder: (context, state) => const ThesisInquiryPage()),
 
-    // ✅ الصفحات الجديدة — Explore
+    // ─── Explore ───────────────────────────────────────────────
     GoRoute(path: '/new-books', builder: (context, state) => const NewBooksPage()),
     GoRoute(path: '/announcements', builder: (context, state) => const AnnouncementsPage()),
     GoRoute(path: '/librarian-info', builder: (context, state) => const LibrarianInfoPage()),
