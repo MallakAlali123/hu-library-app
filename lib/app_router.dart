@@ -28,7 +28,8 @@ import 'package:hu_library_app/features/auth/new_books_page.dart';
 import 'package:hu_library_app/features/auth/announcements_page.dart';
 import 'package:hu_library_app/features/auth/librarian_info_page.dart';
 import 'package:hu_library_app/features/auth/chatbot_page.dart';
-import 'package:hu_library_app/features/auth/book_suggestion_page.dart'; // ✅ الجديد
+import 'package:hu_library_app/features/auth/book_suggestion_page.dart';
+import 'package:hu_library_app/features/auth/my_requests_page.dart';
 
 import 'package:hu_library_app/features/auth/home_page.dart' as student;
 import 'package:hu_library_app/features/auth/LibraryServicesPage.dart' as librarian;
@@ -105,12 +106,14 @@ final GoRouter appRouter = GoRouter(
       path: '/my-books',
       builder: (context, state) => _placeholderScreen(context, 'My Borrowed Books', Icons.menu_book_rounded, '/student'),
     ),
+
+    // ✅ My Requests — صفحة حقيقية
     GoRoute(
       path: '/my-requests',
-      builder: (context, state) => _placeholderScreen(context, 'My Requests', Icons.assignment_outlined, '/student'),
+      builder: (context, state) => const MyRequestsPage(),
     ),
 
-    // ✅ غيّرنا book-suggestion من placeholder لصفحة حقيقية
+    // ✅ Book Suggestion — صفحة حقيقية
     GoRoute(
       path: '/book-suggestion',
       builder: (context, state) => const BookSuggestionPage(),

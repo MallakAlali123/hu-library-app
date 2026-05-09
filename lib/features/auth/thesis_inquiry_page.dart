@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hu_library_app/widgets/common_widgets.dart';
+
 
 class ThesisInquiryPage extends StatefulWidget {
   const ThesisInquiryPage({super.key});
@@ -28,6 +31,39 @@ class _ThesisInquiryPageState extends State<ThesisInquiryPage> {
     super.dispose();
   }
 
+  // ✅ الإرسال لـ Firestore
+  Future<void> _submitInquiry() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance.collection('thesis_inquiries').add({
+        'inquiryType': _selectedType,
+        'title': _titleController.text.trim(),
+        'author': _authorController.text.trim(),
+        'year': _yearController.text.trim(),
+        'notes': _notesController.text.trim(),
+        'studentId': user?.uid ?? '',
+        'studentName': user?.displayName ?? user?.email ?? 'Unknown',
+        'status': 'PENDING',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showSuccessDialog(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +77,8 @@ class _ThesisInquiryPageState extends State<ThesisInquiryPage> {
           onPressed: () => context.pop(),
         ),
         title: Text('Book or Thesis Inquiry'.tr(),
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.bold,
-                fontSize: 18)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -67,64 +101,36 @@ class _ThesisInquiryPageState extends State<ThesisInquiryPage> {
             const SizedBox(height: 16),
             buildFieldLabel(context, 'Title'.tr()),
             const SizedBox(height: 8),
-            buildTextField(
-                controller: _titleController,
-                hint: 'Enter title'.tr(),
-                icon: Icons.title_rounded,
-                context: context,
+            buildTextField(controller: _titleController, hint: 'Enter title'.tr(),
+                icon: Icons.title_rounded, context: context,
                 validator: (v) => v == null || v.isEmpty ? 'This field is required'.tr() : null),
             const SizedBox(height: 16),
             buildFieldLabel(context, 'Author / Researcher'.tr()),
             const SizedBox(height: 8),
-            buildTextField(
-                controller: _authorController,
-                hint: 'Enter name'.tr(),
-                icon: Icons.person_outline_rounded,
-                context: context),
+            buildTextField(controller: _authorController, hint: 'Enter name'.tr(),
+                icon: Icons.person_outline_rounded, context: context),
             const SizedBox(height: 16),
             buildFieldLabel(context, 'Year (optional)'.tr()),
             const SizedBox(height: 8),
-            buildTextField(
-                controller: _yearController,
-                hint: 'e.g. 2020'.tr(),
-                icon: Icons.calendar_today_outlined,
-                context: context),
+            buildTextField(controller: _yearController, hint: 'e.g. 2020'.tr(),
+                icon: Icons.calendar_today_outlined, context: context),
             const SizedBox(height: 16),
             buildFieldLabel(context, 'Additional Notes'.tr()),
             const SizedBox(height: 8),
-            buildTextField(
-                controller: _notesController,
-                hint: 'Any additional details...'.tr(),
-                icon: Icons.notes_rounded,
-                context: context,
-                maxLines: 4),
+            buildTextField(controller: _notesController, hint: 'Any additional details...'.tr(),
+                icon: Icons.notes_rounded, context: context, maxLines: 4),
             const SizedBox(height: 32),
             SizedBox(
-              width: double.infinity,
-              height: 52,
+              width: double.infinity, height: 52,
               child: ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          setState(() => _isLoading = true);
-                          Future.delayed(const Duration(seconds: 2), () {
-                            if (mounted) {
-                              setState(() => _isLoading = false);
-                              _showSuccessDialog(context);
-                            }
-                          });
-                        }
-                      },
+                onPressed: _isLoading ? null : _submitInquiry, // ✅ بيرسل لـ Firestore
                 style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFCC3333),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0),
                 child: _isLoading
-                    ? const SizedBox(
-                        width: 22, height: 22,
+                    ? const SizedBox(width: 22, height: 22,
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : Text('Submit Inquiry'.tr(),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -144,26 +150,19 @@ class _ThesisInquiryPageState extends State<ThesisInquiryPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFCC3333)
+          color: isSelected ? const Color(0xFFCC3333)
               : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-              color: isSelected
-                  ? const Color(0xFFCC3333)
-                  : Theme.of(context).colorScheme.outlineVariant),
+          border: Border.all(color: isSelected ? const Color(0xFFCC3333)
+              : Theme.of(context).colorScheme.outlineVariant),
         ),
         child: Row(children: [
           Icon(icon, size: 18,
-              color: isSelected
-                  ? Colors.white
+              color: isSelected ? Colors.white
                   : Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           const SizedBox(width: 6),
-          Text(type.tr(),
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface)),
+          Text(type.tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface)),
         ]),
       ),
     );
@@ -175,24 +174,19 @@ class _ThesisInquiryPageState extends State<ThesisInquiryPage> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-              width: 64, height: 64,
+          Container(width: 64, height: 64,
               decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), shape: BoxShape.circle),
               child: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 40)),
           const SizedBox(height: 16),
-          Text('Inquiry Submitted!'.tr(),
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          Text('Inquiry Submitted!'.tr(), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text('We will get back to you soon'.tr(),
-              textAlign: TextAlign.center,
+          Text('We will get back to you soon'.tr(), textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13,
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
         ]),
         actions: [
-          TextButton(
-              onPressed: () { context.pop(); context.pop(); },
-              child: Text('Done'.tr(),
-                  style: const TextStyle(color: Color(0xFFCC3333)))),
+          TextButton(onPressed: () { context.pop(); context.pop(); },
+              child: Text('Done'.tr(), style: const TextStyle(color: Color(0xFFCC3333)))),
         ],
       ),
     );

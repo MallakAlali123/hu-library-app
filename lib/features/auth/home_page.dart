@@ -19,7 +19,8 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
     super.dispose();
   }
 
-  final List<_ServiceItem> _requestServices = [
+  // ✅ كل الخدمات بقائمة وحدة
+  final List<_ServiceItem> _allServices = [
     _ServiceItem(
       title: 'Arabic Book Purchase',
       icon: Icons.menu_book_rounded,
@@ -62,9 +63,6 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
       imageAsset: 'assets/images/thesis_inquiry.png',
       route: '/thesis-inquiry',
     ),
-  ];
-
-  final List<_ServiceItem> _otherServices = [
     _ServiceItem(
       title: 'Newly Added Books',
       icon: Icons.auto_stories_outlined,
@@ -122,7 +120,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
           children: [
             // شريط البحث
             GestureDetector(
-              onTap: () => context.push('/search'), // ✅ push
+              onTap: () => context.push('/search'),
               child: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -154,13 +152,13 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
 
             const SizedBox(height: 24),
 
-            // قسم: Submit Requests
-            _buildSectionHeader(context, 'Submit Requests'.tr()),
+            // ✅ قسم واحد فقط — Services & Requests
+            _buildSectionHeader(context, 'Services & Requests'.tr()),
             const SizedBox(height: 14),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: _requestServices.length,
+              itemCount: _allServices.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
@@ -168,34 +166,10 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                 childAspectRatio: 1.1,
               ),
               itemBuilder: (context, index) {
-                final service = _requestServices[index];
+                final service = _allServices[index];
                 return _ServiceCard(
                   service: service,
-                  onTap: () => context.push(service.route), // ✅ push
-                );
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // قسم: Explore
-            _buildSectionHeader(context, 'Explore'.tr()),
-            const SizedBox(height: 14),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _otherServices.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
-              ),
-              itemBuilder: (context, index) {
-                final service = _otherServices[index];
-                return _ServiceCard(
-                  service: service,
-                  onTap: () => context.push(service.route), // ✅ push
+                  onTap: () => context.push(service.route),
                 );
               },
             ),
@@ -204,7 +178,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
 
             // قسم المساعدة
             GestureDetector(
-              onTap: () => context.push('/chatbot'), // ✅ push
+              onTap: () => context.push('/chatbot'),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -233,7 +207,8 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                             style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onSurface),
+                                color:
+                                    Theme.of(context).colorScheme.onSurface),
                           ),
                           const SizedBox(height: 3),
                           Text(
@@ -251,7 +226,10 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 16,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.3),
                     ),
                   ],
                 ),
@@ -263,7 +241,6 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
         ),
       ),
 
-      // Bottom Nav — يبقى go لأنه تنقل رئيسي
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -286,9 +263,11 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
           BottomNavigationBarItem(
               icon: const Icon(Icons.home_outlined), label: 'HOME'.tr()),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.assignment_outlined), label: 'REQUESTS'.tr()),
+              icon: const Icon(Icons.assignment_outlined),
+              label: 'REQUESTS'.tr()),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.menu_book_rounded), label: 'MY BOOKS'.tr()),
+              icon: const Icon(Icons.menu_book_rounded),
+              label: 'MY BOOKS'.tr()),
           BottomNavigationBarItem(
               icon: const Icon(Icons.person_rounded), label: 'PROFILE'.tr()),
         ],
