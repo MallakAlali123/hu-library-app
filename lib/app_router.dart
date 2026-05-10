@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hu_library_app/features/auth/LibraryServicesPage.dart';
+import 'package:hu_library_app/features/auth/MyBooksPage.dart' show MyBooksPage;
 import 'package:hu_library_app/features/auth/book_suggestion.dart';
 import 'package:hu_library_app/features/auth/logs_screen.dart';
 import 'package:hu_library_app/features/auth/roles_screen.dart';
@@ -20,7 +21,7 @@ import 'package:hu_library_app/features/auth/forgot_password_verify_n.dart';
 import 'package:hu_library_app/features/auth/notifications_screen.dart';
 import 'package:hu_library_app/features/auth/settings_screen.dart';
 
-// ✅ الصفحات الجديدة
+
 import 'package:hu_library_app/features/auth/arabic_book_purchase_page.dart';
 import 'package:hu_library_app/features/auth/foreign_book_purchase_page.dart';
 import 'package:hu_library_app/features/auth/thesis_inquiry_page.dart';
@@ -102,9 +103,11 @@ final GoRouter appRouter = GoRouter(
       path: '/search',
       builder: (context, state) => _placeholderScreen(context, 'Search Books', Icons.search_rounded, '/student'),
     ),
+
+    // ✅ My Books — صفحة حقيقية
     GoRoute(
       path: '/my-books',
-      builder: (context, state) => _placeholderScreen(context, 'My Borrowed Books', Icons.menu_book_rounded, '/student'),
+      builder: (context, state) => const MyBooksPage(),
     ),
 
     // ✅ My Requests — صفحة حقيقية
