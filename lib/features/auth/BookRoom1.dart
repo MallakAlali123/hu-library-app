@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
+import 'package:easy_localization/easy_localization.dart';
 import '../../services/request_service.dart';
 
 class BookRoom1Screen extends StatefulWidget {
@@ -11,13 +11,15 @@ class BookRoom1Screen extends StatefulWidget {
 }
 
 class _BookRoom1ScreenState extends State<BookRoom1Screen> {
-  // تعديل 1: جعل الشهر يبدأ من الشهر الحالي
-  DateTime _currentMonth = DateTime.now(); 
+  // Calendar State
+  DateTime _currentMonth = DateTime.now();
   int? _selectedDay;
   String? _selectedTime;
   bool _isLoading = false;
+  
   final RequestService _requestService = RequestService();
 
+  // Configuration
   final List<String> _timeSlots = [
     '09:00 AM',
     '10:30 AM',
@@ -27,15 +29,17 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     '04:30 PM',
   ];
 
-  final Set<String> _bookedSlots = {'01:30 PM'};
-  final String _currentSlot = '10:30 AM';
+  // Simulated backend data for booked slots
+  final Set<String> _bookedSlots = {'01:30 PM'}; 
 
   @override
   void initState() {
     super.initState();
-    // تعديل 2: اختيار يوم اليوم الحالي تلقائياً
+    // Auto-select today
     _selectedDay = DateTime.now().day;
   }
+
+  // --- Calendar Logic ---
 
   void _previousMonth() {
     setState(() {
@@ -49,79 +53,112 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     });
   }
 
+  // ✅ FIXED FUNCTION
   List<int?> _getDaysInMonth() {
-    final firstDay = DateTime(_currentMonth.year, _currentMonth.month, 1);
+    final firstDayOfMonth = DateTime(_currentMonth.year, _currentMonth.month, 1);
     final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
-    final startWeekday = firstDay.weekday % 7;
-    final List<int?> days = List.filled(startWeekday, null);
+    
+    // Calculate padding days (empty slots before the 1st of the month)
+    // Dart DateTime: Monday = 1 ... Sunday = 7.
+    // We want Sunday to be index 0, Monday index 1, etc.
+    int weekdayIndex = firstDayOfMonth.weekday % 7;
+
+    // ✅ CORRECT WAY: Initialize an empty list. This is automatically "growable".
+    final List<int?> days = [];
+
+    // Add the empty padding slots
+    for (int i = 0; i < weekdayIndex; i++) {
+      days.add(null);
+    }
+
+    // Add the actual days of the month
     for (int i = 1; i <= daysInMonth; i++) {
       days.add(i);
     }
+    
     return days;
   }
 
   String _monthName(int month) {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
     return months[month - 1];
   }
+
+  // --- Submission Logic ---
 
   void _handleReserve() async {
     if (_selectedDay == null || _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a date and time'.tr())),
+        SnackBar(
+          content: Text('Please select a date and time'.tr()),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final result = await _requestService.submitRequest(
-      requestType: 'hall_reservation',
-      title: 'Hall Reservation - Room A',
-      description: 'Date: ${_monthName(_currentMonth.month)} $_selectedDay, ${_currentMonth.year} | Time: $_selectedTime',
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ Reservation submitted successfully!'.tr()),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      final result = await _requestService.submitRequest(
+        requestType: 'hall_reservation',
+        title: 'Hall Reservation - Room A',
+        description: 'Date: ${_monthName(_currentMonth.month)} $_selectedDay, ${_currentMonth.year} | Time: $_selectedTime',
       );
-      context.go('/student');
-    } else {
+
+      if (!mounted) return;
+      
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Reservation submitted successfully!'.tr()),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        // Navigate back or to dashboard
+        context.go('/student'); 
+      } else {
+        throw Exception(result['message'] ?? 'Unknown error');
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text('Error: ${e.toString()}'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final days = _getDaysInMonth();
+    final primaryColor = const Color(0xFFCC3333);
 
     return Scaffold(
-      // ✅ تعديل لون الخلفية ليدعم Dark Mode
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        // ✅ تعديل لون الخلفية ليدعم Dark Mode
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: theme.colorScheme.surface,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: () => context.go('/hall'),
-          child: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: theme.colorScheme.onSurface),
+          onPressed: () => context.go('/hall'),
         ),
         title: Text(
           'Reserve Hall'.tr(),
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -129,8 +166,10 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.info_outline_rounded, color: Theme.of(context).colorScheme.onSurface),
-            onPressed: () {},
+            icon: Icon(Icons.info_outline_rounded, color: theme.colorScheme.onSurface),
+            onPressed: () {
+              // TODO: Show info dialog
+            },
           ),
         ],
       ),
@@ -139,42 +178,44 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
+            // --- Header Image ---
             ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               child: Stack(
                 children: [
-                  // تعديل 3: تغيير الصورة لصورة موجودة
                   Image.asset(
                     'assets/images/hall.png',
                     width: double.infinity,
-                    height: 160,
+                    height: 180,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: double.infinity,
-                      height: 160,
-                      color: const Color(0xFF8B2222),
-                      child: const Icon(Icons.meeting_room, color: Colors.white70, size: 50), // ✅ تصحيح اسم الأيقونة
+                      height: 180,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [primaryColor.withOpacity(0.8), primaryColor.withOpacity(0.4)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: const Icon(Icons.meeting_room, color: Colors.white70, size: 60),
                     ),
                   ),
                   Positioned(
                     bottom: 12,
                     left: 12,
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black54,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Center(
-                        child: Text(
-                          'A',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                      child: const Text(
+                        'Room A',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -185,51 +226,63 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 24),
 
+            // --- Calendar Section ---
             Text(
               'Select Date'.tr(),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
             ),
-
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ دينامي
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant), // ✅ دينامي
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
               ),
               child: Column(
                 children: [
+                  // Month Navigation
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: _previousMonth,
-                        child: Icon(Icons.chevron_left_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                      IconButton(
+                        onPressed: _previousMonth,
+                        icon: Icon(Icons.chevron_left, color: theme.colorScheme.onSurface),
+                        splashRadius: 20,
                       ),
                       Text(
                         '${_monthName(_currentMonth.month)} ${_currentMonth.year}',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          fontSize: 16, 
+                          fontWeight: FontWeight.bold, 
+                          color: theme.colorScheme.onSurface
+                        ),
                       ),
-                      GestureDetector(
-                        onTap: _nextMonth,
-                        child: Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                      IconButton(
+                        onPressed: _nextMonth,
+                        icon: Icon(Icons.chevron_right, color: theme.colorScheme.onSurface),
+                        splashRadius: 20,
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
+                  // Weekdays Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) {
                       return SizedBox(
-                        width: 32,
+                        width: 36,
                         child: Text(
                           d,
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 12, 
+                            color: theme.colorScheme.onSurface.withOpacity(0.6), 
+                            fontWeight: FontWeight.w600
+                          ),
                         ),
                       );
                     }).toList(),
@@ -237,6 +290,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
                   const SizedBox(height: 8),
 
+                  // Days Grid
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -248,22 +302,32 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                     itemBuilder: (context, index) {
                       final day = days[index];
                       if (day == null) return const SizedBox();
+                      
                       final isSelected = day == _selectedDay;
+                      final isToday = day == DateTime.now().day && 
+                                      _currentMonth.month == DateTime.now().month &&
+                                      _currentMonth.year == DateTime.now().year;
+
                       return GestureDetector(
                         onTap: () => setState(() => _selectedDay = day),
                         child: Container(
                           margin: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFCC3333) : Colors.transparent,
+                            color: isSelected ? primaryColor : Colors.transparent,
                             shape: BoxShape.circle,
+                            border: isToday && !isSelected 
+                                ? Border.all(color: primaryColor, width: 1.5) 
+                                : null,
                           ),
                           child: Center(
                             child: Text(
                               '$day',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 14,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                                color: isSelected 
+                                    ? Colors.white 
+                                    : theme.colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -277,12 +341,12 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
             const SizedBox(height: 24),
 
+            // --- Time Slots Section ---
             Text(
               'Available Time Slots'.tr(),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
             ),
-
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             GridView.builder(
               shrinkWrap: true,
@@ -290,28 +354,32 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
               itemCount: _timeSlots.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 2.5, // Wider buttons
               ),
               itemBuilder: (context, index) {
                 final time = _timeSlots[index];
                 final isBooked = _bookedSlots.contains(time);
-                final isCurrent = time == _currentSlot;
                 final isSelected = time == _selectedTime;
 
-                Color bgColor = const Color(0xFFFFF0F0);
-                Color textColor = const Color(0xFFCC3333);
-                Color borderColor = const Color(0xFFFFCCCC);
+                // Styling Logic
+                Color bgColor;
+                Color textColor;
+                Color borderColor;
 
                 if (isBooked) {
-                  bgColor = const Color(0xFFF5F5F5);
-                  textColor = const Color(0xFFAAAAAA);
-                  borderColor = const Color(0xFFE0E0E0);
-                } else if (isCurrent || isSelected) {
-                  bgColor = const Color(0xFFCC3333);
+                  bgColor = theme.colorScheme.surfaceContainerHighest;
+                  textColor = theme.colorScheme.onSurface.withOpacity(0.4);
+                  borderColor = Colors.transparent;
+                } else if (isSelected) {
+                  bgColor = primaryColor;
                   textColor = Colors.white;
-                  borderColor = const Color(0xFFCC3333);
+                  borderColor = primaryColor;
+                } else {
+                  bgColor = theme.colorScheme.surface;
+                  textColor = theme.colorScheme.onSurface;
+                  borderColor = theme.colorScheme.outline;
                 }
 
                 return GestureDetector(
@@ -319,55 +387,76 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: bgColor,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: borderColor),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
-                            decoration: isBooked ? TextDecoration.lineThrough : null,
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            time,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                              decoration: isBooked ? TextDecoration.lineThrough : null,
+                            ),
                           ),
-                        ),
-                        if (isCurrent && !isBooked) ...[
-                          const SizedBox(width: 4),
-                          Icon(Icons.access_time_rounded, size: 14, color: textColor),
+                          if (isBooked)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 6.0),
+                              child: Icon(
+                                Icons.close, 
+                                size: 14, 
+                                color: textColor
+                              ),
+                            ),
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 );
               },
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
 
+            // --- Reserve Button ---
             SizedBox(
               width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
+              height: 56,
+              child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleReserve,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFCC3333),
+                  backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
+                  disabledBackgroundColor: primaryColor.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
                 ),
-                icon: _isLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.event_available_rounded, size: 20),
-                label: _isLoading
-                    ? const Text('Submitting...')
-                    : const Text('Reserve Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24, 
+                        height: 24, 
+                        child: CircularProgressIndicator(
+                          color: Colors.white, 
+                          strokeWidth: 2.5
+                        )
+                      )
+                    : Text(
+                        'Reserve Now'.tr(),
+                        style: const TextStyle(
+                          fontSize: 16, 
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5
+                        ),
+                      ),
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
           ],
         ),
       ),
