@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart'; // لاستخدام debugPrint
+import 'package:flutter/foundation.dart';
 
 class HallScreen extends StatefulWidget {
   const HallScreen({super.key});
@@ -12,7 +12,7 @@ class HallScreen extends StatefulWidget {
 }
 
 class _HallScreenState extends State<HallScreen> {
-  // قائمة بأسماء الصور
+  // قائمة بأسماء الصور (Fallback في حال لم توجد صور في Firebase)
   final List<String> _roomImages = [
     'assets/images/room1.jpg',
     'assets/images/room2.jpg',
@@ -36,9 +36,18 @@ class _HallScreenState extends State<HallScreen> {
         ),
         centerTitle: true,
         actions: [
+          // زر البحث (يمكن تفعيله لاحقاً)
           IconButton(
             icon: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {},
+          ),
+          // ✅ إضافة زر "My Bookings" للوصول السريع
+          IconButton(
+            icon: Icon(Icons.event_note_outlined, color: Theme.of(context).colorScheme.onSurface),
+            tooltip: 'My Bookings',
+            onPressed: () {
+              context.go('/bookings');
+            },
           ),
         ],
       ),
@@ -70,67 +79,51 @@ class _HallScreenState extends State<HallScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('halls').snapshots(),
               builder: (context, snapshot) {
-                
-                // 1. طباعة حالة الاتصال للتصحيح (استخدام debugPrint)
-                debugPrint("Connection State: ${snapshot.connectionState}");
-
                 // Loading
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFCC3333)),
-                  );
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFFCC3333)));
                 }
 
                 // Error
                 if (snapshot.hasError) {
                   debugPrint("Firebase Error: ${snapshot.error}");
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 40),
-                        const SizedBox(height: 10),
-                        Text('Error: ${snapshot.error}'),
-                      ],
-                    ),
-                  );
+                  return Center(child: Text('Error loading data'.tr()));
                 }
 
-                // 2. التحقق من وجود البيانات
+                // No Data
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  debugPrint("No Data Found in 'halls' collection.");
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.meeting_room_outlined, size: 64, color: Color(0xFFCC3333)),
                         const SizedBox(height: 16),
-                        Text('No halls available'.tr(), style: const TextStyle(color: Color(0xFF888888))),
+                        Text('No halls available'.tr()),
                         const SizedBox(height: 8),
-                        Text('Check Collection Name in Firebase'.tr(), style: const TextStyle(color: Colors.red, fontSize: 10)),
+                        Text('(Check collection name in Firebase)', style: TextStyle(fontSize: 10, color: Colors.red)),
                       ],
                     ),
                   );
                 }
 
-                // 3. البيانات موجودة
+                // Success
                 final halls = snapshot.data!.docs;
-                debugPrint("Data Loaded Successfully. Count: ${halls.length}");
-
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   itemCount: halls.length,
                   itemBuilder: (context, index) {
-                    // جلب البيانات وتحويلها لـ Map
                     final data = halls[index].data() as Map<String, dynamic>;
+                    
+                    // التعامل مع حالة الغرفة (Available vs Reserved)
+                    final isAvailable = (data['status']?.toString().toLowerCase() ?? 'available') == 'available';
 
-                    // إنشاء _RoomItem (بدون const)
                     return _RoomCard(
                       room: _RoomItem(
+                        id: halls[index].id, // تمرير الـ ID
                         name: data['name'] ?? 'Unknown Room',
                         capacity: data['capacity']?.toString() ?? '0',
                         floor: data['floor'] ?? 'Unknown Floor',
-                        status: data['status'] == 'available' ? 'AVAILABLE' : 'RESERVED',
+                        status: isAvailable ? 'AVAILABLE' : 'RESERVED',
                         imageAsset: _roomImages[index % _roomImages.length],
                       ),
                     );
@@ -145,12 +138,12 @@ class _HallScreenState extends State<HallScreen> {
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) context.go('/student');
+          if (index == 2) context.go('/bookings'); // ✅ تفعيل زر BOOKINGS في الأسفل
           if (index == 3) context.go('/profile');
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Theme.of(context).colorScheme.surface,
         selectedItemColor: const Color(0xFFCC3333),
-        // ignore: deprecated_member_use
         unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
@@ -166,10 +159,10 @@ class _HallScreenState extends State<HallScreen> {
   }
 }
 
+// --- Room Card Widget ---
 class _RoomCard extends StatelessWidget {
   final _RoomItem room;
 
-  // تمت إزالة const من هنا لأن الـ Object يتغير في كل مرة
   const _RoomCard({required this.room});
 
   @override
@@ -221,7 +214,6 @@ class _RoomCard extends StatelessWidget {
                 ),
             ],
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
             child: Column(
@@ -251,7 +243,7 @@ class _RoomCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: room.status == 'RESERVED'
                         ? null
-                        : () => context.go('/book-room', extra: room.name), // تمرير اسم الغرفة للصفحة التالية
+                        : () => context.go('/book-room', extra: room.name), // ✅ تمرير اسم الغرفة
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFCC3333),
                       foregroundColor: Colors.white,
@@ -274,8 +266,9 @@ class _RoomCard extends StatelessWidget {
   }
 }
 
-// تمت إزالة const من الـ Constructor لاستقبال البيانات الديناميكية
+// --- Data Model ---
 class _RoomItem {
+  final String id; // أضفنا ID
   final String name;
   final String capacity;
   final String floor;
@@ -283,6 +276,7 @@ class _RoomItem {
   final String imageAsset;
 
   const _RoomItem({
+    required this.id,
     required this.name,
     required this.capacity,
     required this.floor,

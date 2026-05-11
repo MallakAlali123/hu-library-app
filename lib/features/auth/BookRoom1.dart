@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../services/request_service.dart';
+import '../../services/booking_service.dart'; // تأكد من صحة المسار
 
 class BookRoom1Screen extends StatefulWidget {
-  const BookRoom1Screen({super.key});
+  // ✅ 1. تعريف المتغير في الكلاس
+  final String roomName;
+
+  // ✅ 2. استقبال المتغير في الـ Constructor
+  const BookRoom1Screen({
+    super.key, 
+    required this.roomName, // هذا السطر سيحل مشكلة الخطأ
+  });
 
   @override
   State<BookRoom1Screen> createState() => _BookRoom1ScreenState();
 }
 
 class _BookRoom1ScreenState extends State<BookRoom1Screen> {
-  // Calendar State
+  // --- State ---
   DateTime _currentMonth = DateTime.now();
   int? _selectedDay;
   String? _selectedTime;
   bool _isLoading = false;
   
-  final RequestService _requestService = RequestService();
+  final BookingService _bookingService = BookingService();
 
-  // Configuration
+  // --- Configuration ---
   final List<String> _timeSlots = [
     '09:00 AM',
     '10:30 AM',
@@ -29,13 +36,11 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     '04:30 PM',
   ];
 
-  // Simulated backend data for booked slots
   final Set<String> _bookedSlots = {'01:30 PM'}; 
 
   @override
   void initState() {
     super.initState();
-    // Auto-select today
     _selectedDay = DateTime.now().day;
   }
 
@@ -53,25 +58,18 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     });
   }
 
-  // ✅ FIXED FUNCTION
   List<int?> _getDaysInMonth() {
     final firstDayOfMonth = DateTime(_currentMonth.year, _currentMonth.month, 1);
     final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
     
-    // Calculate padding days (empty slots before the 1st of the month)
-    // Dart DateTime: Monday = 1 ... Sunday = 7.
-    // We want Sunday to be index 0, Monday index 1, etc.
     int weekdayIndex = firstDayOfMonth.weekday % 7;
 
-    // ✅ CORRECT WAY: Initialize an empty list. This is automatically "growable".
     final List<int?> days = [];
 
-    // Add the empty padding slots
     for (int i = 0; i < weekdayIndex; i++) {
       days.add(null);
     }
 
-    // Add the actual days of the month
     for (int i = 1; i <= daysInMonth; i++) {
       days.add(i);
     }
@@ -103,10 +101,13 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _requestService.submitRequest(
-        requestType: 'hall_reservation',
-        title: 'Hall Reservation - Room A',
-        description: 'Date: ${_monthName(_currentMonth.month)} $_selectedDay, ${_currentMonth.year} | Time: $_selectedTime',
+      final dateString = '${_monthName(_currentMonth.month)} $_selectedDay, ${_currentMonth.year}';
+
+      // ✅ 3. استخدام اسم الغرفة القادم من الـ Router
+      final result = await _bookingService.createBooking(
+        roomName: widget.roomName, 
+        date: dateString,
+        time: _selectedTime!,
       );
 
       if (!mounted) return;
@@ -119,8 +120,7 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        // Navigate back or to dashboard
-        context.go('/student'); 
+        context.go('/bookings'); 
       } else {
         throw Exception(result['message'] ?? 'Unknown error');
       }
@@ -210,9 +210,10 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        'Room A',
-                        style: TextStyle(
+                      child: Text(
+                        // ✅ 4. عرض اسم الغرفة الصحيح
+                        widget.roomName,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -242,7 +243,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
               ),
               child: Column(
                 children: [
-                  // Month Navigation
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -269,7 +269,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
                   const SizedBox(height: 16),
 
-                  // Weekdays Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) {
@@ -290,7 +289,6 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
 
                   const SizedBox(height: 8),
 
-                  // Days Grid
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -356,14 +354,13 @@ class _BookRoom1ScreenState extends State<BookRoom1Screen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 2.5, // Wider buttons
+                childAspectRatio: 2.5,
               ),
               itemBuilder: (context, index) {
                 final time = _timeSlots[index];
                 final isBooked = _bookedSlots.contains(time);
                 final isSelected = time == _selectedTime;
 
-                // Styling Logic
                 Color bgColor;
                 Color textColor;
                 Color borderColor;
