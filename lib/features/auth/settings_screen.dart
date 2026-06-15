@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:easy_localization/easy_localization.dart'; // ✅ استيراد الترجمة
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,8 +21,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
   
-  // متغير للوضع الليلي
-  bool _isDarkMode = false;
+  // المتغيرات المحلية
+  bool _isDarkMode = false; // سنقوم بتحديثها في build أو من التفضيلات
 
   @override
   void initState() {
@@ -31,7 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadThemePreference();
   }
 
-  // تعديل دالة تحميل الاسم
   void _loadCurrentName() async {
     final user = _auth.currentUser;
     if (user != null) {
@@ -40,20 +39,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final doc = await docRef.get();
 
         if (doc.exists) {
-          // إذا وجدت بيانات، اعرضها
-          setState(() {
-            _nameController.text = doc.data()?['name'] ?? '';
-          });
+          if (mounted) {
+            setState(() {
+              _nameController.text = doc.data()?['name'] ?? '';
+            });
+          }
         } else {
-          // إذا لم توجد بيانات، قم بإنشائها الآن
           await docRef.set({
             'name': 'Student',
             'email': user.email,
             'createdAt': DateTime.now(),
           });
-          setState(() {
-            _nameController.text = 'Student';
-          });
+          if (mounted) {
+            setState(() {
+              _nameController.text = 'Student';
+            });
+          }
         }
       } catch (e) {
         print("Error loading user data: $e");
@@ -61,15 +62,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // تحميل تفضيل الثيم
   void _loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isDarkMode = prefs.getBool('isDarkMode') ?? false;
-    });
+    final isDark = prefs.getBool('isDarkMode');
+    // نقوم بالتحديث فقط إذا كانت القيمة موجودة في الذاكرة
+    if (isDark != null && mounted) {
+      setState(() {
+        _isDarkMode = isDark;
+      });
+    }
   }
 
-  // تحديث الاسم
   void _updateName() async {
     if (_nameController.text.trim().isEmpty) return;
 
@@ -86,7 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Name updated successfully'), backgroundColor: Colors.green),
           );
-          Navigator.pop(context); // العودة للبروفايل
+          Navigator.pop(context);
         }
       }
     } catch (e) {
@@ -100,24 +103,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // تبديل الثيم
   void _toggleTheme(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', value);
+    
     setState(() {
       _isDarkMode = value;
     });
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isDarkMode', value);
-    // حفظ القيمة، سيتم تطبيقها عند إعادة التشغيل (أو يمكن إضافتها لـ ThemeProvider)
-  }
-
-  // مسح البيانات
-  void _clearCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cache cleared successfully'), backgroundColor: Colors.green),
+        SnackBar(
+          content: Text(value ? 'Dark Mode Enabled' : 'Light Mode Enabled'), 
+          duration: const Duration(seconds: 1),
+        ),
       );
+    }
+  }
+
+  void _clearCache() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Cache'),
+        content: const Text('Are you sure you want to clear all cached data?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      final bool isDark = prefs.getBool('isDarkMode') ?? false; 
+      await prefs.clear();
+      await prefs.setBool('isDarkMode', isDark);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cache cleared successfully'), backgroundColor: Colors.green),
+        );
+      }
     }
   }
 
@@ -129,12 +162,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ الحل الصحيح: نقوم بتحديث القيمة هنا داخل build
+    // هذا يعطينا القيمة الحالية الصحيحة في كل مرة يعيد فيها التطبيق الرسم
+    if (_isDarkMode != (Theme.of(context).brightness == Brightness.dark)) {
+       // تحديث المتغير المحلي ليطابق الثيم العام إذا تغير من خارج الشاشة
+       _isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    }
+
     return Scaffold(
-      // ✅ استخدام لون الخلفية من الثيم (يتغير حسب الـ ThemeMode)
       backgroundColor: Theme.of(context).colorScheme.surface,
       
       appBar: AppBar(
-        // ✅ استخدام لون الخلفية من الثيم
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
@@ -147,115 +185,136 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: Column(
         children: [
-          //1. قسم الحساب
-          Text(
-            'account'.tr(),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-          ),
-          const SizedBox(height: 10),
-
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest, // لون الحاوية يعتمد على الثيم
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
               children: [
+                //1. قسم الحساب
                 Text(
-                  'display_name'.tr(),
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                  'account'.tr(),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    hintText: 'Enter your name',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                const SizedBox(height: 10),
+
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'display_name'.tr(),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          hintText: 'Enter your name',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _updateName,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFCC3333),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : Text('save_changes'.tr(), style: const TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _updateName,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFCC3333),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Text('save_changes'.tr(), style: const TextStyle(color: Colors.white)),
-                  ),
+
+                const SizedBox(height: 24),
+
+                //2. قسم المظهر
+                Text(
+                  'appearance'.tr(),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                 ),
+                const SizedBox(height: 10),
+
+                _SettingsSwitchTile(
+                  icon: Icons.dark_mode_outlined,
+                  title: 'dark_mode'.tr(),
+                  subtitle: 'enable_dark_theme'.tr(),
+                  value: _isDarkMode,
+                  onChanged: _toggleTheme,
+                ),
+
+                const SizedBox(height: 24),
+
+                //3. قسم عام
+                Text(
+                  'general'.tr(),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                ),
+                const SizedBox(height: 10),
+
+                _SettingsTile(
+                  icon: Icons.cleaning_services_outlined,
+                  title: 'clear_cache'.tr(),
+                  onTap: _clearCache,
+                ),
+                
+                _SettingsTile(
+                  icon: Icons.star_border_outlined,
+                  title: 'rate_us'.tr(),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Thank you for rating us! ⭐⭐⭐⭐⭐'), backgroundColor: Colors.orangeAccent),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 30),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
-
-          //2. قسم المظهر (Appearance)
-          Text(
-            'appearance'.tr(),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+          // قسم معلومات التطبيق
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Text(
+                    'Version 1.0.0',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '© ${DateTime.now().year} HU Library App',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
-
-          _SettingsSwitchTile(
-            icon: Icons.dark_mode_outlined,
-            title: 'dark_mode'.tr(),
-            subtitle: 'enable_dark_theme'.tr(),
-            value: _isDarkMode,
-            onChanged: _toggleTheme,
-          ),
-
-          const SizedBox(height: 24),
-
-          //3. قسم عام (General)
-          Text(
-            'general'.tr(),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-          ),
-          const SizedBox(height: 10),
-
-          _SettingsTile(
-            icon: Icons.cleaning_services_outlined,
-            title: 'clear_cache'.tr(),
-            onTap: _clearCache,
-          ),
-          _SettingsTile(
-            icon: Icons.language_outlined,
-            title: 'language'.tr(),
-            trailing: context.locale.languageCode == 'ar' ? 'العربية' : 'English',
-            onTap: () async {
-              // تبديل اللغة مع إعادة تحميل الصفحة لتفعيل التغيير
-              final newLocale = context.locale.languageCode == 'en' ? const Locale('ar') : const Locale('en');
-              await context.setLocale(newLocale);
-              
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Language changed to ${newLocale.languageCode == 'ar' ? 'Arabic' : 'English'}'), backgroundColor: Colors.green),
-                );
-              }
-            },
-          ),
-          _SettingsTile(
-            icon: Icons.star_border_outlined,
-            title: 'rate_us'.tr(),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Opening Store...')),
-              );
-            },
-          ),
-
-          const SizedBox(height: 30),
         ],
       ),
     );
@@ -267,14 +326,14 @@ class _SettingsSwitchTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged; 
 
   const _SettingsSwitchTile({
     required this.icon,
     required this.title,
     this.subtitle,
     required this.value,
-    required this.onChanged,
+    this.onChanged, 
   });
 
   @override
@@ -291,7 +350,7 @@ class _SettingsSwitchTile extends StatelessWidget {
         subtitle: subtitle != null ? Text(subtitle!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))) : null,
         trailing: Switch(
           value: value,
-          onChanged: onChanged,
+          onChanged: onChanged, 
           activeColor: const Color(0xFFCC3333),
         ),
       ),
@@ -303,13 +362,13 @@ class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? trailing;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
     this.trailing,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
@@ -317,7 +376,7 @@ class _SettingsTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest, // استخدام لون من الثيم
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(

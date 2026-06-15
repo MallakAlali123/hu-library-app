@@ -6,8 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'firebase_options.dart';
 import 'app_router.dart';
 
-// ✅ Global notifier للثيم
-final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+// تمت إزالة themeNotifier العام من هنا لتجنب الأخطاء الدائرية
+// سنقوم بإدارة الثيم داخل MyApp
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,11 +17,6 @@ void main() async {
   );
 
   await EasyLocalization.ensureInitialized();
-
-  // ✅ تحميل الثيم المحفوظ قبل التشغيل
-  final prefs = await SharedPreferences.getInstance();
-  final isDark = prefs.getBool('isDarkMode') ?? false;
-  themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
   runApp(
     EasyLocalization(
@@ -36,42 +31,73 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // متغير لتخزين وضع الثيم
+  ThemeMode _themeMode = ThemeMode.light;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemePreference();
+  }
+
+  // دالة لقراءة الثيم المحفوظ وتحديث التطبيق فوراً
+  void _loadThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDark = prefs.getBool('isDarkMode') ?? false;
+    
+    if (mounted) {
+      setState(() {
+        _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeNotifier,
-      builder: (context, themeMode, _) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          title: 'HU Library',
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'HU Library',
 
-          localizationsDelegates: context.localizationDelegates,
-          supportedLocales: context.supportedLocales,
-          locale: context.locale,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
 
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFFCC3333),
-              brightness: Brightness.light,
-            ),
-          ),
+      // ✅ تعريف الثيم الفاتح يدوياً (بدون seedColor)
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFFCC3333),     // اللون الأحمر الأساسي
+          surface: Color(0xFFF4F6F8),     // خلفية فاتحة
+          onSurface: Colors.black87,      // نص أسود
+          surfaceContainerHighest: Colors.white, // بطاقات بيضاء
+        ),
+      ),
 
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFFCC3333),
-              brightness: Brightness.dark,
-            ),
-          ),
+      // ✅ تعريف الثيم الداكن يدوياً
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFCC3333),     // اللون الأحمر الأساسي
+          surface: Color(0xFF121212),     // خلفية داكنة جداً
+          onSurface: Colors.white,        // نص أبيض
+          surfaceContainerHighest: Color(0xFF1E1E1E), // بطاقات داكنة
+        ),
+      ),
 
-          themeMode: themeMode, // ✅ يتغير فوراً
-          routerConfig: appRouter,
-        );
-      },
+      // ✅ ربط الثيم بالمتغير الذي يتحدث تلقائياً
+      themeMode: _themeMode, 
+      
+      routerConfig: appRouter,
     );
   }
 }

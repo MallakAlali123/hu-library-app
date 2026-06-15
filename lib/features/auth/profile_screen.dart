@@ -147,14 +147,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: () => context.go('/my-books'), 
                   ),
                   
+                  // ✅ تم التعديل هنا: التوجيه لصفحة Saved
                   _MenuItem(
                     icon: Icons.bookmark_border_rounded,
                     title: 'Saved'.tr(),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Saved Books screen coming soon'.tr())),
-                      );
-                    },
+                    onTap: () => context.go('/saved'),
                   ),
 
                   const SizedBox(height: 8),

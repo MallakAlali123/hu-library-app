@@ -68,6 +68,11 @@ import 'package:hu_library_app/features/auth/guide_password_reset.dart';
 
 import 'package:hu_library_app/features/auth/notificationsadmin_screen.dart' hide NotificationsScreen;
 
+import 'package:hu_library_app/features/auth/search_screen.dart';
+
+// ✅ تأكد من وجود هذا الاستيراد في الأعلى
+import 'package:hu_library_app/features/auth/saved_screen.dart';
+
 // --- Router Configuration ---
 
 final GoRouter appRouter = GoRouter(
@@ -152,11 +157,9 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const HallScreen(),
     ),
 
-    // ✅ تم تعديل هذا المسار لاستقبال اسم الغرفة
     GoRoute(
       path: '/book-room',
       builder: (context, state) {
-        // استقبال اسم الغرفة من state.extra، مع قيمة افتراضية 'Room A'
         final roomName = state.extra as String? ?? 'Room A';
         return BookRoom1Screen(roomName: roomName);
       },
@@ -184,12 +187,7 @@ final GoRouter appRouter = GoRouter(
 
     GoRoute(
       path: '/search',
-      builder: (context, state) => _placeholderScreen(
-            context,
-            'Search Books',
-            Icons.search_rounded,
-            '/student',
-          ),
+      builder: (context, state) => const SearchBooksScreen(),
     ),
 
     GoRoute(
@@ -240,6 +238,12 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/chatbot',
       builder: (context, state) => const ChatbotPage(),
+    ),
+
+    // ✅ تأكد من وجود هذا المسار
+    GoRoute(
+      path: '/saved',
+      builder: (context, state) => const SavedScreen(),
     ),
 
     // ───────────────── Librarian Routes ─────────────────
@@ -355,8 +359,6 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
-
-// --- Helper Widget for Placeholder Screens ---
 
 Widget _placeholderScreen(
   BuildContext context,
