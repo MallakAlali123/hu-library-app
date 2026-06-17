@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 
 class SavedScreen extends StatelessWidget {
   const SavedScreen({super.key});
@@ -16,7 +17,7 @@ class SavedScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go('/profile'),
         ),
         title: Text(
           'Saved Books',
@@ -30,10 +31,9 @@ class SavedScreen extends StatelessWidget {
       body: user == null
           ? const Center(child: Text("Please login first"))
           : StreamBuilder<QuerySnapshot>(
-              // ✅ التعديل: القراءة من الـ Collection الرئيسية وتصفية حسب userId
+              // ✅ التعديل: القراءة من الـ Collection الرئيسية
               stream: FirebaseFirestore.instance
                   .collection('saved_books')
-                  .where('userId', isEqualTo: user.uid)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,7 +41,6 @@ class SavedScreen extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  // حالة عدم وجود كتب محفوظة
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
