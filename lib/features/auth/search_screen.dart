@@ -1,6 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+// ✅ إضافة استيراد شاشة التفاصيل
+import 'book_details_screen.dart';
 
 class SearchBooksScreen extends StatefulWidget {
   const SearchBooksScreen({super.key});
@@ -10,8 +12,7 @@ class SearchBooksScreen extends StatefulWidget {
 }
 
 class _SearchBooksScreenState extends State<SearchBooksScreen> {
-  final TextEditingController _searchController =
-      TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   String? selectedCategory = 'All';
   String? selectedAuthor = 'All';
@@ -51,11 +52,9 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor:
-            Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -66,8 +65,7 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
             fontSize: 20,
           ),
         ),
-        iconTheme:
-            const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Column(
         children: [
@@ -76,8 +74,7 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withOpacity(0.1),
@@ -92,31 +89,26 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
                   setState(() {});
                 },
                 decoration: InputDecoration(
-                  hintText:
-                      'Search for a book name...',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[400],
-                  ),
+                  hintText: 'Search for a book name...',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
                   prefixIcon: const Icon(
                     Icons.search,
                     color: Color(0xFFD32F2F),
                   ),
-                  suffixIcon:
-                      _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {});
-                              },
-                            )
-                          : null,
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                          },
+                        )
+                      : null,
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(
+                  contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 15,
                   ),
@@ -126,8 +118,7 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
                 _buildDropdown(
@@ -181,131 +172,76 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
                   .collection('search_books')
                   .snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return const Center(
-                    child:
-                        CircularProgressIndicator(),
-                  );
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
                 }
 
-                if (!snapshot.hasData ||
-                    snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child:
-                        Text("No books available"),
-                  );
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No books available"));
                 }
 
-                final allBooks =
-                    snapshot.data!.docs;
+                final allBooks = snapshot.data!.docs;
+                final searchQuery = _searchController.text.trim().toLowerCase();
 
-                final searchQuery =
-                    _searchController.text
-                        .trim()
-                        .toLowerCase();
+                final filteredBooks = allBooks.where((doc) {
+                  final book = doc.data() as Map<String, dynamic>;
 
-                final filteredBooks =
-                    allBooks.where((doc) {
-                  final book = doc.data()
-                      as Map<String, dynamic>;
-
-                  final title =
-                      (book['Title'] ?? '')
-                          .toString()
-                          .toLowerCase();
-
-                  final matchesSearch =
-                      title.contains(searchQuery);
+                  final title = (book['Title'] ?? '').toString().toLowerCase();
+                  final matchesSearch = title.contains(searchQuery);
 
                   bool matchesCategory = true;
-                  if (selectedCategory != null &&
-                      selectedCategory !=
-                          'All') {
-                    matchesCategory =
-                        (book['Category'] ?? '')
-                                .toString() ==
-                            selectedCategory;
+                  if (selectedCategory != null && selectedCategory != 'All') {
+                    matchesCategory = (book['Category'] ?? '').toString() == selectedCategory;
                   }
 
                   bool matchesAuthor = true;
-                  if (selectedAuthor != null &&
-                      selectedAuthor !=
-                          'All') {
-                    matchesAuthor =
-                        (book['Author'] ?? '')
-                                .toString() ==
-                            selectedAuthor;
+                  if (selectedAuthor != null && selectedAuthor != 'All') {
+                    matchesAuthor = (book['Author'] ?? '').toString() == selectedAuthor;
                   }
 
                   bool matchesYear = true;
-                  if (selectedYear != null &&
-                      selectedYear != 'All') {
-                    matchesYear =
-                        (book['Year'] ?? '')
-                                .toString() ==
-                            selectedYear;
+                  if (selectedYear != null && selectedYear != 'All') {
+                    matchesYear = (book['Year'] ?? '').toString() == selectedYear;
                   }
 
-                  return matchesSearch &&
-                      matchesCategory &&
-                      matchesAuthor &&
-                      matchesYear;
+                  return matchesSearch && matchesCategory && matchesAuthor && matchesYear;
                 }).toList();
 
                 if (filteredBooks.isEmpty) {
-                  return const Center(
-                    child: Text(
-                        "No matching books found"),
-                  );
+                  return const Center(child: Text("No matching books found"));
                 }
 
                 return ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(
-                          horizontal: 20),
-                  itemCount:
-                      filteredBooks.length,
-                  itemBuilder:
-                      (context, index) {
-                    final book =
-                        filteredBooks[index]
-                                .data()
-                            as Map<String,
-                                dynamic>;
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: filteredBooks.length,
+                  itemBuilder: (context, index) {
+                    final book = filteredBooks[index].data() as Map<String, dynamic>;
 
                     return Card(
-                      margin:
-                          const EdgeInsets.only(
-                              bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 12),
                       elevation: 2,
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                                12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        contentPadding:
-                            const EdgeInsets.all(
-                                12),
-                        leading: const Icon(
-                          Icons.book,
-                          color: Color(
-                              0xFFD32F2F),
-                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                        leading: const Icon(Icons.book, color: Color(0xFFD32F2F)),
                         title: Text(
-                          book['Title'] ??
-                              'No Title',
-                          style:
-                              const TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                          book['Title'] ?? 'No Title',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
                           "${book['Author'] ?? 'Unknown'} • ${book['Year'] ?? ''}",
                         ),
+                        // ✅ التعديل هنا: إضافة خاصية الضغط للانتقال لشاشة التفاصيل
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BookDetailsScreen(bookData: book),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
@@ -332,8 +268,7 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
       ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.grey.shade300,
         ),
@@ -358,4 +293,3 @@ class _SearchBooksScreenState extends State<SearchBooksScreen> {
     );
   }
 }
-

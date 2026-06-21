@@ -31,9 +31,10 @@ class SavedScreen extends StatelessWidget {
       body: user == null
           ? const Center(child: Text("Please login first"))
           : StreamBuilder<QuerySnapshot>(
-              // ✅ التعديل: القراءة من الـ Collection الرئيسية
+              // ✅ التعديل: القراءة من الـ Collection الرئيسية وتصفية حسب المستخدم
               stream: FirebaseFirestore.instance
                   .collection('saved_books')
+                  .where('userId', isEqualTo: user.uid)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,6 +42,7 @@ class SavedScreen extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  // حالة عدم وجود كتب محفوظة
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -91,6 +93,8 @@ class SavedScreen extends StatelessWidget {
                                 )
                               : const Icon(Icons.book, color: Colors.grey),
                         ),
+                        // ملاحظة: تأكد أن حقل الاسم في saved_books هو 'title' (حرف صغير)
+                        // لأننا حفظناه بهذا الاسم في دالة الحفظ في book_details_screen
                         title: Text(
                           bookData['title'] ?? 'Unknown Title',
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -109,7 +113,10 @@ class SavedScreen extends StatelessWidget {
                                 .delete();
                             
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Removed from saved')),
+                              const SnackBar(
+                                content: Text('Removed from saved'),
+                                backgroundColor: Colors.redAccent,
+                              ),
                             );
                           },
                         ),
