@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class SystemSettingsScreen extends StatelessWidget {
+class SystemSettingsScreen extends StatefulWidget {
   const SystemSettingsScreen({super.key});
 
+  @override
+  State<SystemSettingsScreen> createState() => _SystemSettingsScreenState();
+}
+
+class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
+  // الألوان
   final Color primaryRed = const Color(0xFF8B0000);
   final Color bgGrey = const Color(0xFFFBFBFB);
+
+  // متغيرات حالة الـ Switches
+  bool isMaintenanceMode = false;
+  bool isErrorReporting = true;
+  bool isAcademicSync = true;
+
+  // متغيرات حالة الـ Dropdowns
+  String selectedLanguage = "(Arabic) العربية";
+  String selectedTimezone = "Amman (GMT+03:00)";
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +29,6 @@ class SystemSettingsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-        // ✅ سهم الرجوع للـ Admin Dashboard
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -27,7 +41,6 @@ class SystemSettingsScreen extends StatelessWidget {
         ),
         title: Row(
           children: [
-            // ✅ إصلاح: أيقونة بدل via.placeholder.com
             CircleAvatar(
               radius: 15,
               backgroundColor: Colors.grey[200],
@@ -50,7 +63,9 @@ class SystemSettingsScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-              onPressed: () {}, icon: const Icon(Icons.menu, color: Colors.black))
+              onPressed: () =>
+                  _showSnackBar("قائمة الخيارات قيد التطوير", Icons.menu),
+              icon: const Icon(Icons.menu, color: Colors.black))
         ],
       ),
       bottomNavigationBar: _buildBottomNav(context),
@@ -75,6 +90,65 @@ class SystemSettingsScreen extends StatelessWidget {
     );
   }
 
+  // دالة مساعدة لإظهار رسائل SnackBar
+  void _showSnackBar(String message, [IconData? icon]) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            if (icon != null) Icon(icon, color: Colors.white, size: 20),
+            if (icon != null) const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: primaryRed,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  // دالة مساعدة لإظهار نوافذ التأكيد Alert Dialog
+  void _showConfirmationDialog({
+    required String title,
+    required String message,
+    required String confirmText,
+    required VoidCallback onConfirm,
+    bool isDestructive = false,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text(title,
+              style: TextStyle(
+                  color: isDestructive ? primaryRed : Colors.black)),
+          content: Text(message,
+              textAlign: TextAlign.right, style: const TextStyle(fontSize: 14)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("إلغاء"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                onConfirm();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDestructive ? primaryRed : Colors.grey[800],
+              ),
+              child:
+                  Text(confirmText, style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildDatabaseManagement() {
     return _buildSectionCard(
       child: Column(
@@ -83,7 +157,8 @@ class SystemSettingsScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                     color: Colors.green[50],
                     borderRadius: BorderRadius.circular(20)),
@@ -107,42 +182,92 @@ class SystemSettingsScreen extends StatelessWidget {
             style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 20),
-          _buildDbButton("Initialize", "Wipe & Reset", Icons.refresh, Colors.black),
-          const SizedBox(height: 10),
-          _buildDbButton("Backup Now", "Full Snapshot", Icons.cloud_upload,
-              Colors.white,
-              isPrimary: true),
+          _buildDbButton(
+            title: "Initialize",
+            sub: "Wipe & Reset",
+            icon: Icons.refresh,
+            textColor: Colors.black,
+            onTap: () => _showConfirmationDialog(
+              title: "تهيئة قاعدة البيانات",
+              message:
+                  "هل أنت متأكد؟ سيتم مسح جميع البيانات الحالية وإعادة تعيين النظام بالكامل.",
+              confirmText: "مسح الكل",
+              isDestructive: true,
+              onConfirm: () =>
+                  _showSnackBar("تم إعادة تعيين قاعدة البيانات بنجاح", Icons.check_circle),
+            ),
+          ),
           const SizedBox(height: 10),
           _buildDbButton(
-              "Restore", "Point in Time", Icons.history, Colors.black),
+            title: "Backup Now",
+            sub: "Full Snapshot",
+            icon: Icons.cloud_upload,
+            textColor: Colors.white,
+            isPrimary: true,
+            onTap: () => _showConfirmationDialog(
+              title: "نسخ احتياطي",
+              message: "سيتم إنشاء نسخة احتياطية كاملة للنظام الآن. قد يستغرق ذلك بضع دقائق.",
+              confirmText: "بدء النسخ",
+              onConfirm: () =>
+                  _showSnackBar("جارئ إنشاء النسخة الاحتياطية...", Icons.cloud_upload),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildDbButton(
+            title: "Restore",
+            sub: "Point in Time",
+            icon: Icons.history,
+            textColor: Colors.black,
+            onTap: () => _showConfirmationDialog(
+              title: "استعادة البيانات",
+              message: "سيتم استبدال البيانات الحالية بالبيانات الموجودة في آخر نقطة حفظ.",
+              confirmText: "استعادة الآن",
+              isDestructive: true,
+              onConfirm: () =>
+                  _showSnackBar("تم استعادة البيانات بنجاح", Icons.history),
+            ),
+          ),
           const SizedBox(height: 15),
-          _buildLastBackupInfo(),
+          GestureDetector(
+            onTap: () => _showSnackBar("فتح سجل النسخ الاحتياطي...", Icons.history),
+            child: _buildLastBackupInfo(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDbButton(String title, String sub, IconData icon, Color textColor,
-      {bool isPrimary = false}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: isPrimary ? primaryRed : Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: isPrimary ? null : Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: isPrimary ? Colors.white : primaryRed, size: 20),
-          Text(title,
-              style:
-                  TextStyle(color: textColor, fontWeight: FontWeight.bold)),
-          Text(sub,
-              style: TextStyle(
-                  color: isPrimary ? Colors.white70 : Colors.grey,
-                  fontSize: 10)),
-        ],
+  Widget _buildDbButton({
+    required String title,
+    required String sub,
+    required IconData icon,
+    required Color textColor,
+    bool isPrimary = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isPrimary ? primaryRed : Colors.grey[50],
+          borderRadius: BorderRadius.circular(8),
+          border: isPrimary ? null : Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isPrimary ? Colors.white : primaryRed, size: 20),
+            Text(title,
+                style:
+                    TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+            Text(sub,
+                style: TextStyle(
+                    color: isPrimary ? Colors.white70 : Colors.grey,
+                    fontSize: 10)),
+          ],
+        ),
       ),
     );
   }
@@ -161,11 +286,111 @@ class SystemSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           _buildDropdownLabel("Default Interface Language"),
-          _buildDropdownField("(Arabic) العربية"),
+          GestureDetector(
+            onTap: () => _showLanguageBottomSheet(),
+            child: _buildDropdownField(selectedLanguage),
+          ),
           const SizedBox(height: 15),
           _buildDropdownLabel("Primary Timezone"),
-          _buildDropdownField("Amman (GMT+03:00)"),
+          GestureDetector(
+            onTap: () => _showTimezoneBottomSheet(),
+            child: _buildDropdownField(selectedTimezone),
+          ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Text("اختر اللغة",
+                  style:
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+            const Divider(),
+            ListTile(
+              title: const Text("(Arabic) العربية"),
+              trailing: selectedLanguage == "(Arabic) العربية"
+                  ? const Icon(Icons.check, color: Color(0xFF8B0000))
+                  : null,
+              onTap: () {
+                setState(() => selectedLanguage = "(Arabic) العربية");
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text("(English) English"),
+              trailing: selectedLanguage == "(English) English"
+                  ? const Icon(Icons.check, color: Color(0xFF8B0000))
+                  : null,
+              onTap: () {
+                setState(() => selectedLanguage = "(English) English");
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTimezoneBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Text("اختر المنطقة الزمنية",
+                  style:
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+            const Divider(),
+            ListTile(
+              title: const Text("Amman (GMT+03:00)"),
+              trailing: selectedTimezone == "Amman (GMT+03:00)"
+                  ? const Icon(Icons.check, color: Color(0xFF8B0000))
+                  : null,
+              onTap: () {
+                setState(() => selectedTimezone = "Amman (GMT+03:00)");
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text("New York (GMT-05:00)"),
+              trailing: selectedTimezone == "New York (GMT-05:00)"
+                  ? const Icon(Icons.check, color: Color(0xFF8B0000))
+                  : null,
+              onTap: () {
+                setState(() => selectedTimezone = "New York (GMT-05:00)");
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text("London (GMT+00:00)"),
+              trailing: selectedTimezone == "London (GMT+00:00)"
+                  ? const Icon(Icons.check, color: Color(0xFF8B0000))
+                  : null,
+              onTap: () {
+                setState(() => selectedTimezone = "London (GMT+00:00)");
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -177,12 +402,13 @@ class SystemSettingsScreen extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text("System Health  ", style: TextStyle(fontWeight: FontWeight.bold))
+              Text("System Health  ",
+                  style: TextStyle(fontWeight: FontWeight.bold))
             ],
           ),
           const SizedBox(height: 15),
-          _buildHealthRow(
-              "Server Status", "Operational", Icons.check_circle, Colors.green),
+          _buildHealthRow("Server Status", "Operational", Icons.check_circle,
+              Colors.green),
           _buildHealthRow("Memory Usage", "GB 1.6 / 4.2", Icons.check_circle,
               Colors.green),
           _buildHealthRow(
@@ -220,7 +446,8 @@ class SystemSettingsScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(value,
+              style: const TextStyle(fontWeight: FontWeight.w500)),
           Row(children: [
             Text(label),
             const SizedBox(width: 10),
@@ -233,7 +460,8 @@ class SystemSettingsScreen extends StatelessWidget {
 
   Widget _buildDropdownLabel(String text) => Align(
       alignment: Alignment.centerRight,
-      child: Text(text, style: const TextStyle(fontSize: 12, color: Colors.grey)));
+      child:
+          Text(text, style: const TextStyle(fontSize: 12, color: Colors.grey)));
 
   Widget _buildDropdownField(String text) {
     return Container(
@@ -261,12 +489,29 @@ class SystemSettingsScreen extends StatelessWidget {
           const Align(
               alignment: Alignment.centerRight,
               child: Text("Quick Actions",
-                  style: TextStyle(
-                      color: Colors.red, fontWeight: FontWeight.bold))),
+                  style:
+                      TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
           const SizedBox(height: 10),
-          _buildActionItem("Clear System Cache", Icons.bolt),
-          _buildActionItem("Run Indexing Service", Icons.search),
-          _buildActionItem("Download System Log", Icons.download),
+          InkWell(
+            onTap: () => _showConfirmationDialog(
+              title: "مسح الكاش",
+              message: "سيتم حذف الملفات المؤقتة لتسريع النظام.",
+              confirmText: "مسح",
+              onConfirm: () =>
+                  _showSnackBar("تم مسح الكاش بنجاح", Icons.bolt),
+            ),
+            child: _buildActionItem("Clear System Cache", Icons.bolt),
+          ),
+          InkWell(
+            onTap: () =>
+                _showSnackBar("جارئ تشغيل خدمة الفهرسة...", Icons.search),
+            child: _buildActionItem("Run Indexing Service", Icons.search),
+          ),
+          InkWell(
+            onTap: () =>
+                _showSnackBar("جارئ تحميل ملف السجل...", Icons.download),
+            child: _buildActionItem("Download System Log", Icons.download),
+          ),
         ],
       ),
     );
@@ -276,11 +521,14 @@ class SystemSettingsScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(8)),
+      decoration:
+          BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(title), Icon(icon, size: 18, color: Colors.grey)],
+        children: [
+          Text(title),
+          Icon(icon, size: 18, color: Colors.grey)
+        ],
       ),
     );
   }
@@ -295,27 +543,50 @@ class SystemSettingsScreen extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold)),
               Icon(Icons.tune)
             ]),
-        _buildSwitchTile("Maintenance Mode",
-            "Temporarily disable user access while performing updates.", false),
-        _buildSwitchTile("Automatic Error Reporting",
-            "Send anonymous diagnostic data to the development team.", true),
         _buildSwitchTile(
-            "Academic Term Sync",
-            "Sync repository collections with the university's central academic calendar.",
-            true),
+            title: "Maintenance Mode",
+            sub: "Temporarily disable user access while performing updates.",
+            val: isMaintenanceMode, 
+            onChanged: (val) {
+          String action = val ? "تفعيل" : "إيقاف";
+          _showConfirmationDialog(
+            title: "$action وضع الصيانة",
+            message: val
+                ? "سيتم تسجيل خروج جميع المستخدمين ومنع الوصول للنظام."
+                : "سيتم إعادة تفعيل الوصول للنظام للمستخدمين.",
+            confirmText: "تأكيد",
+            onConfirm: () => setState(() => isMaintenanceMode = val),
+          );
+        }),
+        _buildSwitchTile(
+            title: "Automatic Error Reporting",
+            sub: "Send anonymous diagnostic data to the development team.",
+            val: isErrorReporting,
+            onChanged: (val) => setState(() => isErrorReporting = val)),
+        _buildSwitchTile(
+            title: "Academic Term Sync",
+            sub: "Sync repository collections with the university's central academic calendar.",
+            val: isAcademicSync,
+            onChanged: (val) => setState(() => isAcademicSync = val)),
       ],
     );
   }
 
-  Widget _buildSwitchTile(String title, String sub, bool val) {
+  // ✅ تم تعديل هذه الدالة لتصبح متغيراتها مسماة (Named Parameters)
+  Widget _buildSwitchTile({
+    required String title,
+    required String sub,
+    required bool val,
+    required Function(bool) onChanged,
+  }) {
     return ListTile(
       title: Text(title,
           textAlign: TextAlign.right,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       subtitle: Text(sub,
-          textAlign: TextAlign.right,
-          style: const TextStyle(fontSize: 11)),
-      leading: Switch(value: val, onChanged: (v) {}, activeColor: primaryRed),
+          textAlign: TextAlign.right, style: const TextStyle(fontSize: 11)),
+      leading: Switch(
+          value: val, onChanged: onChanged, activeColor: primaryRed),
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -325,15 +596,16 @@ class SystemSettingsScreen extends StatelessWidget {
       children: [
         Expanded(
             child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () =>
+                    _showSnackBar("تم التراجع عن التعديلات", Icons.undo),
                 child: const Text("Discard Changes",
                     style: TextStyle(color: Colors.black)))),
         const SizedBox(width: 15),
         Expanded(
             child: ElevatedButton(
-                onPressed: () {},
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: primaryRed),
+                onPressed: () => _showSnackBar(
+                    "تم حفظ الإعدادات بنجاح", Icons.check_circle),
+                style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
                 child: const Text("Save Configuration",
                     style: TextStyle(color: Colors.white)))),
       ],
@@ -353,16 +625,13 @@ class SystemSettingsScreen extends StatelessWidget {
               child: Text("Last automated backup: Today, 04:00 AM",
                   style: TextStyle(fontSize: 10))),
           Text("View History",
-              style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold)),
+              style:
+                  TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  // ✅ الإصلاح: إضافة context وتفعيل الـ navigation
   Widget _buildBottomNav(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
@@ -371,14 +640,22 @@ class SystemSettingsScreen extends StatelessWidget {
       currentIndex: 0,
       onTap: (index) {
         switch (index) {
-          case 0: break;
-          case 1: context.go('/admin/logs'); break;
-          case 2: context.go('/admin/roles'); break;
-          case 3: context.go('/admin/users'); break;
+          case 0:
+            break;
+          case 1:
+            context.go('/admin/logs');
+            break;
+          case 2:
+            context.go('/admin/roles');
+            break;
+          case 3:
+            context.go('/admin/users');
+            break;
         }
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "SETTINGS"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined), label: "SETTINGS"),
         BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "LOGS"),
         BottomNavigationBarItem(icon: Icon(Icons.security), label: "ROLES"),
         BottomNavigationBarItem(icon: Icon(Icons.group), label: "USERS"),
