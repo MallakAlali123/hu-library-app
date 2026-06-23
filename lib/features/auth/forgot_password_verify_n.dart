@@ -32,14 +32,10 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
     }
 
     setState(() => _isLoading = true);
-    
-    // محاكاة عملية التحقق
     await Future.delayed(const Duration(seconds: 2));
-    
     if (!mounted) return;
     setState(() => _isLoading = false);
-    
-    // الانتقال لصفحة تعيين كلمة المرور الجديدة
+
     context.go('/new-password');
   }
 
@@ -60,7 +56,14 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.onSurface),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            // ✅ يرجع لصفحة الإيميل السابقة عن طريق الـ stack
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/forgot-password');
+            }
+          },
         ),
         title: Text(
           'Verify Number'.tr(),
@@ -183,7 +186,10 @@ class _ForgotPasswordVerify_nState extends State<ForgotPasswordVerify_n> {
                     text: TextSpan(
                       style: const TextStyle(fontSize: 13),
                       children: [
-                        TextSpan(text: "Didn't receive code? ".tr(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
+                        TextSpan(
+                          text: "Didn't receive code? ".tr(),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                        ),
                         WidgetSpan(
                           child: GestureDetector(
                             onTap: () {

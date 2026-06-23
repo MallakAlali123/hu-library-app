@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart'; // ✅ إضافة الترجمة
+import 'package:easy_localization/easy_localization.dart';
 
 class ForgotPasswordEmail extends StatefulWidget {
   const ForgotPasswordEmail({super.key});
@@ -23,22 +23,20 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
   void _handleSendCode() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      // محاكاة إرسال الكود
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
       setState(() => _isLoading = false);
-      context.go('/forgot-password-verify');
+      context.push('/forgot-password-verify'); // ✅ push بدل go عشان يحفظ الصفحة السابقة
     }
   }
 
   void _handleFindByNumber() {
-    context.go('/forgot-password-number');
+    context.push('/forgot-password-verify-n'); // ✅ push كمان هنا
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ✅ استخدام لون من الثيم
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -63,10 +61,10 @@ class _ForgotPasswordEmailState extends State<ForgotPasswordEmail> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest, // ✅ لون دينامي
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(Icons.lock_reset_rounded, color: const Color(0xFFCC3333), size: 28),
+                child: const Icon(Icons.lock_reset_rounded, color: Color(0xFFCC3333), size: 28),
               ),
 
               const SizedBox(height: 20),

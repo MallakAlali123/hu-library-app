@@ -23,7 +23,6 @@ const _sources = [
   _Source('bookings',       'userId',    'roomName',  'timestamp', 'Hall Booking',    Icons.meeting_room_outlined),
   _Source('book_purchases', 'studentId', 'title',     'createdAt', 'Book Purchase',   Icons.shopping_bag_outlined),
   _Source('suggestions',    'userId',    'title',     'createdAt', 'Book Suggestion', Icons.lightbulb_outline_rounded),
-  // أضف أي collection جديد هون
 ];
 
 class LibraryServicesPage extends StatefulWidget {
@@ -44,8 +43,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  // فلتر الحالة بتاب الطلبات
-  String _statusFilter = 'ALL'; // ALL | PENDING | DONE
+  String _statusFilter = 'ALL';
 
   @override
   void dispose() {
@@ -130,12 +128,11 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
   }
 
   // ==========================================
-  // 1. Requests Tab — يعرض كل أنواع الطلبات
+  // 1. Requests Tab
   // ==========================================
   Widget _buildRequestsTab() {
     return Column(
       children: [
-        // ─── Header + Search ───
         Container(
           color: Colors.white,
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
@@ -150,7 +147,6 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
               const SizedBox(height: 16),
               _buildSearchBar(onChanged: (v) => setState(() => _searchQuery = v)),
               const SizedBox(height: 12),
-              // فلاتر الحالة
               Row(
                 children: [
                   _filterChip('ALL',     'All'),
@@ -163,8 +159,6 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
             ],
           ),
         ),
-
-        // ─── قائمة الطلبات من كل الـ Collections ───
         Expanded(
           child: _AllRequestsList(
             sources:      _sources,
@@ -314,8 +308,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                             const SnackBar(content: Text('Announcement Posted')));
                       }
                     },
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: primaryRed),
+                    style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
                     child: const Text("Post Announcement",
                         style: TextStyle(color: Colors.white)),
                   ),
@@ -351,8 +344,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                     margin: const EdgeInsets.only(bottom: 10),
                     child: ListTile(
                       title: Text(a['title'] ?? '',
-                          style:
-                              const TextStyle(fontWeight: FontWeight.bold)),
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -364,8 +356,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                         ],
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline,
-                            color: Colors.red),
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
                         onPressed: () => _deleteDocument(
                             'announcements', snapshot.data!.docs[i].id),
                       ),
@@ -434,8 +425,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
                           .showSnackBar(const SnackBar(
                               content: Text('Profile Updated'),
                               backgroundColor: Colors.green)),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryRed),
+                      style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
                       child: const Text("Update Info",
                           style: TextStyle(color: Colors.white)),
                     ),
@@ -507,12 +497,10 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
           children: [
             TextField(
                 controller: titleCtrl,
-                decoration:
-                    const InputDecoration(labelText: "Title")),
+                decoration: const InputDecoration(labelText: "Title")),
             TextField(
                 controller: authorCtrl,
-                decoration:
-                    const InputDecoration(labelText: "Author")),
+                decoration: const InputDecoration(labelText: "Author")),
           ],
         ),
         actions: [
@@ -531,8 +519,7 @@ class _LibraryServicesPageState extends State<LibraryServicesPage> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: primaryRed),
-            child: const Text("Save",
-                style: TextStyle(color: Colors.white)),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -627,13 +614,11 @@ class _AllRequestsListState extends State<_AllRequestsList> {
     final all = _data.values.expand((l) => l).toList();
 
     return all.where((r) {
-      // فلتر البحث
       final title  = (r['title']     as String).toLowerCase();
       final sid    = (r['studentId'] as String).toLowerCase();
       final q      = widget.searchQuery.toLowerCase();
       if (q.isNotEmpty && !title.contains(q) && !sid.contains(q)) return false;
 
-      // فلتر الحالة
       final statusUp = (r['status'] as String).toUpperCase();
       if (widget.statusFilter == 'PENDING') return statusUp == 'PENDING';
       if (widget.statusFilter == 'DONE')    return statusUp != 'PENDING';
@@ -742,24 +727,24 @@ class _AllRequestsListState extends State<_AllRequestsList> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // نوع الطلب
                       Text(label,
                           style: TextStyle(
                               fontSize: 10,
                               color: widget.primaryRed,
                               fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
-                      // العنوان
                       Text(title,
                           style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold)),
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis, // ✅ إصلاح overflow
+                          maxLines: 1),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 // شارة الحالة
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                       color: chipBg,
                       borderRadius: BorderRadius.circular(20)),
@@ -783,16 +768,21 @@ class _AllRequestsListState extends State<_AllRequestsList> {
             const Divider(height: 1),
             const SizedBox(height: 10),
 
-            // ─── معلومات الطالب والتاريخ ───
+            // ─── معلومات الطالب والتاريخ ───  ✅ الإصلاح الرئيسي هنا
             Row(
               children: [
                 const Icon(Icons.person_outline, size: 14, color: Colors.grey),
                 const SizedBox(width: 6),
-                Text("Student: $studentId",
-                    style:
-                        const TextStyle(fontSize: 12, color: Colors.black54)),
-                const Spacer(),
+                Expanded(                                    // ✅ Expanded بدل Spacer
+                  child: Text(
+                    "Student: $studentId",
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    overflow: TextOverflow.ellipsis,         // ✅ قطع النص الطويل
+                    maxLines: 1,
+                  ),
+                ),
                 if (createdAt != null) ...[
+                  const SizedBox(width: 8),
                   const Icon(Icons.calendar_today_outlined,
                       size: 12, color: Colors.grey),
                   const SizedBox(width: 4),

@@ -10,19 +10,18 @@ class GenerateReportScreen extends StatefulWidget {
 
 class _GenerateReportScreenState extends State<GenerateReportScreen> {
   final Color primaryRed = const Color(0xFFB01E1E);
-  
+
   String _selectedMonth = "APR";
   String _selectedFormat = "PDF";
   String _reportType = "Circulation Report";
 
   final List<String> _months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
-  // ✅ حل الرجوع الآمن
   void _goBack() {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/admin'); // fallback
+      context.go('/admin');
     }
   }
 
@@ -35,7 +34,7 @@ class _GenerateReportScreenState extends State<GenerateReportScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: _goBack, // ✅ تم التعديل
+          onPressed: _goBack,
         ),
         title: const Text("Generate Report", style: TextStyle(color: Colors.black)),
         centerTitle: true,
@@ -106,6 +105,8 @@ class _GenerateReportScreenState extends State<GenerateReportScreen> {
                   _buildRadioOption("User Activity", "Most active students.", _reportType, (val) => setState(() => _reportType = val)),
                   const SizedBox(height: 20),
                   const Text("Export Format", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  // ✅ الإصلاح: Flexible بدل Text العادي لمنع الـ overflow
                   Row(
                     children: [
                       Radio<String>(
@@ -114,7 +115,12 @@ class _GenerateReportScreenState extends State<GenerateReportScreen> {
                         activeColor: primaryRed,
                         onChanged: (val) => setState(() => _selectedFormat = val!),
                       ),
-                      const Text("PDF Document"),
+                      const Flexible(
+                        child: Text(
+                          "PDF Document",
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       const SizedBox(width: 20),
                       Radio<String>(
                         value: "Excel",
@@ -122,7 +128,12 @@ class _GenerateReportScreenState extends State<GenerateReportScreen> {
                         activeColor: primaryRed,
                         onChanged: (val) => setState(() => _selectedFormat = val!),
                       ),
-                      const Text("Excel Sheet"),
+                      const Flexible(
+                        child: Text(
+                          "Excel Sheet",
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ],

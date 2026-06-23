@@ -21,6 +21,7 @@ import 'package:hu_library_app/features/auth/donate_screen.dart';
 
 import 'package:hu_library_app/features/auth/New_Password.dart';
 import 'package:hu_library_app/features/auth/forgot_password_email.dart';
+import 'package:hu_library_app/features/auth/forgot_password_verify.dart';   // ✅ إضافة
 import 'package:hu_library_app/features/auth/forgot_password_verify_n.dart';
 import 'package:hu_library_app/features/auth/notifications_screen.dart';
 import 'package:hu_library_app/features/auth/settings_screen.dart';
@@ -70,7 +71,6 @@ import 'package:hu_library_app/features/auth/notificationsadmin_screen.dart' hid
 
 import 'package:hu_library_app/features/auth/search_screen.dart';
 
-// ✅ تأكد من وجود هذا الاستيراد في الأعلى
 import 'package:hu_library_app/features/auth/saved_screen.dart';
 
 // --- Router Configuration ---
@@ -87,6 +87,7 @@ final GoRouter appRouter = GoRouter(
         state.matchedLocation == '/register' ||
         state.matchedLocation == '/verify-email' ||
         state.matchedLocation == '/forgot-password' ||
+        state.matchedLocation == '/forgot-password-verify' ||   // ✅ إضافة
         state.matchedLocation == '/forgot-password-verify-n' ||
         state.matchedLocation == '/new-password';
 
@@ -129,6 +130,12 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordEmail(),
+    ),
+
+    // ✅ Route جديد لصفحة التحقق عبر الإيميل
+    GoRoute(
+      path: '/forgot-password-verify',
+      builder: (context, state) => const ForgotPasswordVerify(),
     ),
 
     GoRoute(
@@ -240,7 +247,6 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const ChatbotPage(),
     ),
 
-    // ✅ تأكد من وجود هذا المسار
     GoRoute(
       path: '/saved',
       builder: (context, state) => const SavedScreen(),

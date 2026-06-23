@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// --- 1. نموذج بيانات الكتاب (اختياري) ---
+
 class BookModel {
   final String title;
   final String author;
@@ -53,7 +53,7 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
   }
 
   void _goBack() {
-    // ✅ محاولة العودة بناءً على حالة الـ Stack
+   
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     } else {
@@ -64,11 +64,7 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
   Future<void> _submitBook() async {
     if (!_formKey.currentState!.validate()) {
       try {
-        // محاكاة إضافة كتاب إلى Firestore
-        // في التطبيق الحقيقي، استخدم الكود التالي:
-        // await FirebaseFirestore.instance.collection('books').add({...});
-        
-        // للآن سنظهر رسالة نجاح ونعود
+       
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -98,7 +94,7 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: _goBack, // ✅ تم تعديل الزر لاستخدام دالة _goBack
+          onPressed: _goBack,
         ),
         title: const Text("Add New Book", style: TextStyle(color: Colors.black)),
         centerTitle: true,
@@ -160,7 +156,7 @@ class _AddNewBookScreenState extends State<AddNewBookScreen> {
     );
   }
 
-  // ✅ دالة مساعدة (Helper Method) لبناء حقول الإدخال بسهولة
+ 
   Widget _buildInputField(String label, String hint, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
